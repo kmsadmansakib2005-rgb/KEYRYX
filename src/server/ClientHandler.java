@@ -31,10 +31,11 @@ public class ClientHandler implements Runnable {
                     true);
 
             writer.println("Welcome- "+ user.getUserName());
-            while(true)
-            {
-                String message= reader.readLine();
+            Server.broadcastUserList();
 
+            String message;
+            while ((message = reader.readLine()) != null)
+            {
                 String[] parts= message.split("\\|", 2);
                 String reciepent= parts[0];
                 String content= parts[1];
@@ -65,10 +66,16 @@ public class ClientHandler implements Runnable {
         }
         catch(IOException e)
         {
-            if(user!=null)
+            System.out.println("Connection error with client.");
+        }
+        finally
+        {
+            if(user != null)
             {
                 user.setOnline(false);
                 Server.removeClient(this);
+                Server.broadcastUserList();
+
                 System.out.println(user.getUserName() + " disconnected!");
             }
         }

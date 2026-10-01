@@ -45,6 +45,24 @@ public class Server {
         }
     }
 
+    public static void broadcastUserList()
+    {
+        StringBuilder userList= new StringBuilder("USERS|");
+
+        for(ClientHandler client: clients )
+        {
+            if(client.getUser()!=null &&client.getUser().isOnline())
+            {
+                userList.append(client.getUser().getUserName()).append(",");
+            }
+        }
+
+        for(ClientHandler client: clients)
+        {
+            client.sendMessage(userList.toString());
+        }
+    }
+
     public static void removeClient(ClientHandler client)
     {
         clients.remove(client);

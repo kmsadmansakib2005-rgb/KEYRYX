@@ -1,0 +1,205 @@
+package gui;
+
+import java.net.*;
+import java.io.*;
+import javax.swing.*;
+import java.awt.*;
+
+public class ChatGui extends JFrame {
+
+    private PrintWriter writer;
+    private BufferedReader reader;
+    private String username;
+
+    public ChatGui() {
+        username = JOptionPane.showInputDialog(this,
+                "Enter username: ",
+                "KEYRYX Login", JOptionPane.QUESTION_MESSAGE);
+
+        if (username == null || username.trim().isEmpty()) {
+            return;
+        }
+        username = username.trim();
+
+        Socket socket;
+
+        try {
+            socket = new Socket("localHost", 1000);
+            writer = new PrintWriter(socket.getOutputStream(), true);
+            writer.println(username);
+
+            reader = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()));
+
+
+            JOptionPane.showMessageDialog(this,
+                    "Connected to the server!",
+                    "Connection Successful!", JOptionPane.INFORMATION_MESSAGE);
+
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Could not connect to the server!",
+                    "connection failed!", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+
+        ImageIcon image = new ImageIcon(
+                ChatGui.class.getResource("img.png"));
+        this.setIconImage(image.getImage());
+
+        this.setTitle("Keyryx | A LAN Chat Application");
+        this.setSize(720, 420);
+        this.setResizable(false);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                try {
+                   socket.close();
+                } catch (IOException ex) {
+                    System.out.println("Error closing connection.");
+                }
+            }
+        });
+        this.setLocationRelativeTo(null);
+        this.setLayout(new BorderLayout());
+
+        JPanel headerPanel = new JPanel();
+        JPanel usersPanel = new JPanel(new BorderLayout());
+        JPanel chatPanel = new JPanel(new BorderLayout(5, 5));
+
+        JPanel statusPanel = new JPanel();
+        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
+
+        JPanel sidebarPanel = new JPanel(new BorderLayout(5, 5));
+        sidebarPanel.setPreferredSize(new Dimension(130, 0));
+
+        //adding border to all panels
+        headerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        sidebarPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+        chatPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
+        statusPanel.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        usersPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+        JLabel statusTitle = new JLabel("Connection Status");
+        statusTitle.setFont(new Font("Arial", Font.BOLD, 13));
+
+        JLabel connectionLabel = new JLabel("Staus: Connected");
+        JLabel usernameLabel = new JLabel("User: " + username);
+        JLabel serverLabel = new JLabel("Server: localhost:1000");
+
+        statusPanel.add(statusTitle);
+        statusPanel.add(Box.createVerticalStrut(5));
+        statusPanel.add(connectionLabel);
+        statusPanel.add(usernameLabel);
+        statusPanel.add(serverLabel);
+
+        sidebarPanel.add(statusPanel, BorderLayout.NORTH);
+
+        JLabel userTitle = new JLabel("Online Users", SwingConstants.CENTER);
+        userTitle.setFont(new Font("Arial", Font.BOLD, 14));
+
+        DefaultListModel<String> userListModel = new DefaultListModel<>();
+        JList<String> userList = new JList<>(userListModel);
+
+        userListModel.addElement("No users online");
+
+        JScrollPane userScrollPane = new JScrollPane(userList);
+        usersPanel.add(userTitle, BorderLayout.NORTH);
+        usersPanel.add(userScrollPane, BorderLayout.CENTER);
+
+        sidebarPanel.add(usersPanel, BorderLayout.CENTER);
+
+        this.add(headerPanel, BorderLayout.NORTH);
+        this.add(sidebarPanel, BorderLayout.WEST);
+
+        JLabel chatLabel = new JLabel("Chat room — Everyone");
+        chatLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        chatLabel.setBorder(BorderFactory.createEmptyBorder
+                (8, 10, 8, 5));
+        chatPanel.add(chatLabel, BorderLayout.NORTH);
+
+        JTextArea messageArea = new JTextArea();
+        messageArea.setEditable(false);
+        messageArea.setLineWrap(true);
+        messageArea.setWrapStyleWord(true);
+
+        JScrollPane messageScroll = new JScrollPane(messageArea);
+        chatPanel.add(messageScroll, BorderLayout.CENTER);
+
+        JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
+        JTextField messageInput = new JTextField();
+        JButton sendButton = new JButton("Send");
+        sendButton.setFocusable(false);
+
+        inputPanel.add(messageInput, BorderLayout.CENTER);
+        inputPanel.add(sendButton, BorderLayout.EAST);
+
+        chatPanel.add(inputPanel, BorderLayout.SOUTH);
+
+        sendButton.addActionListener(e -> {
+            String message = messageInput.getText().trim();
+
+            if (!message.isEmpty()) {
+                writer.println("ALL|" + message);
+                // messageArea.append("You: "+message+ "\n");
+                messageInput.setText("");
+            }
+        });
+        messageInput.addActionListener(e -> sendButton.doClick());
+
+
+        this.add(chatPanel, BorderLayout.CENTER);
+
+        //receiver thread
+        Thread receiverThread = new Thread(() -> {
+            try {
+                String message;
+
+                while ((message = reader.readLine()) != null) {
+                    String receivedMessage = message;
+                    SwingUtilities.invokeLater(() -> {
+                        if (receivedMessage.startsWith("USERS|")) {
+                            userListModel.clear();
+
+                            String names = receivedMessage.substring(6);
+
+                            if (names.isEmpty()) {
+                                userListModel.addElement("No users online");
+                            } else {
+                                for (String name : names.split(",")) {
+                                    if (!name.isEmpty()) {
+                                        userListModel.addElement(name);
+                                    }
+                                }
+                            }
+                        } else {
+                            messageArea.append(receivedMessage + "\n");
+                        }
+                    });
+                }
+            } catch (IOException e) {
+
+                System.out.println("Disconnected from server!");
+            }
+        });
+
+        receiverThread.start();
+
+        JLabel title = new JLabel("<html><center>" + "KEYRYX" + "<font size='4'>"
+                + "<br>Every node has a voice" +
+                "</font></center></html>", SwingConstants.CENTER);
+
+        title.setFont(new Font("Arial", Font.BOLD, 24));
+
+        headerPanel.add(title);
+
+        this.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        ChatGui chatgui = new ChatGui();
+    }
+}
