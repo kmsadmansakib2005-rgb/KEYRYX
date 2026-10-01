@@ -12,6 +12,7 @@ public class Server {
         {
             ServerSocket serverSocket= new ServerSocket(1000);
             System.out.println("Server has Started!");
+            ChatHistory.readHistory();
             System.out.println("Waiting for the client....");
 
             int clientCount=0;

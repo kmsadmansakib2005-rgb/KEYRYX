@@ -45,18 +45,19 @@ public class ClientHandler implements Runnable {
                         content,
                         new java.util.Date().toString() //time stamp
                 );
+                ChatHistory.saveMessage(msg);
 
                 System.out.println(msg.getTimeStamp()+" | "+msg.getSender()+ " says: "+
                         msg.getContent());
 
                 if(msg.getReceiver().equals("ALL"))
                 {
-                    Server.broadcastMessage(msg.getTimeStamp()+" | "+msg.getSender()+
+                    Server.broadcastMessage(msg.getTimeStamp()+" | \n"+msg.getSender()+
                             " : "+ msg.getContent());
                 }
                 else
                 {
-                    Server.sendMessage(msg.getTimeStamp()+" | "+msg.getReceiver(),
+                    Server.sendMessage(msg.getReceiver(),msg.getTimeStamp()+" | \n"+
                             msg.getSender()+ ": "+msg.getContent());
                 }
             }
