@@ -4,12 +4,13 @@ import java.io.*;
 import java.util.*;
 
 public class Server {
+    private static ArrayList<ClientHandler> clients= new ArrayList<>();
 
     public static void main(String[] args)
     {
         try
         {
-            ServerSocket serverSocket= new ServerSocket(3000);
+            ServerSocket serverSocket= new ServerSocket(1000);
             System.out.println("Server has Started!");
             System.out.println("Waiting for the client....");
 
@@ -19,14 +20,15 @@ public class Server {
             {
                 Socket socket= serverSocket.accept();
                 clientCount++;
-                System.out.println("Client- "+ clientCount+ " has joined!");
+                System.out.println("Client- "+clientCount+ " has joined!");
 
                 ClientHandler clientHandler= new ClientHandler(socket, clientCount);
+                clients.add(clientHandler);
 
                 Thread thread= new Thread(clientHandler);
                 thread.start();
-            }
 
+            }
         }
         catch (IOException e)
         {
@@ -34,4 +36,37 @@ public class Server {
         }
     }
 
+    public static void broadcastMessage(String message)
+    {
+        for(ClientHandler client: clients)
+        {
+            client.sendMessage(message);
+        }
+    }
+
+    public static void removeClient(ClientHandler client)
+    {
+        clients.remove(client);
+    }
+
+    public static ClientHandler findCleint(String username)
+    {
+        for(ClientHandler client: clients)
+        {
+            if(client.getUser()!=null && client.getUser().getUserName().equals(username))
+            {
+                return client;
+            }
+        }
+        return null;
+    }
+
+    public static void sendMessage(String username, String message)
+    {
+        ClientHandler client = findCleint(username);
+        if(client!=null)
+        {
+            client.sendMessage(message);
+        }
+    }
 }

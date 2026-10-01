@@ -1,14 +1,14 @@
 package model;
 
-public class user {
+public class User {
 
     private String userName;
     private boolean online;
 
-    public user(String userName, boolean online)
+    public User(String userName, boolean online)
     {
         this.userName= userName;
-        online= true;
+        this.online= online;
     }
 
     public String getUserName()

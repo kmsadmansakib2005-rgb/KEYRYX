@@ -9,23 +9,30 @@ public class Client {
     {
         try
         {
-            Socket socket= new Socket("localhost", 3000);
+            Scanner sc= new Scanner(System.in);
+            System.out.println("Enter your username: ");
+            String username= sc.nextLine();
+
+
+            //Socket socket= new Socket("localhost", 1000);
+            ClientConnection clientConnection= new ClientConnection();
+            Socket socket= clientConnection.getSocket();
 
             ClientReceiver receiver= new ClientReceiver(socket);
             Thread receiverThread= new Thread(receiver);
             receiverThread.start();
 
-            PrintWriter writer= new PrintWriter(socket.getOutputStream(),
-                    true);
+            clientConnection.sendMessage(username);
 
-            Scanner sc= new Scanner(System.in);
+         //   PrintWriter writer= new PrintWriter(socket.getOutputStream(),true);
+
             System.out.println("Enter message: ");
 
             while(true)
             {
                 String message= sc.nextLine();
 
-                writer.println(message);
+                clientConnection.sendMessage(message);
             }
         }
         catch (IOException e)

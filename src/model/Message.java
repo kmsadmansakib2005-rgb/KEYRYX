@@ -1,6 +1,6 @@
 package model;
 
-public class message {
+public class Message {
    private String sender;
    private String receiver;
    private String content;
@@ -8,7 +8,7 @@ public class message {
                       in which time the message
                       is sent or received*/
 
-   public message(String sender, String receiver,String content, String timeStamp)
+   public Message(String sender, String receiver, String content, String timeStamp)
    {
        this.sender=sender;
        this.receiver= receiver;
