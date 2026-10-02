@@ -3,6 +3,7 @@ import model.Message;
 import model.User;
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
 
 public class ClientHandler implements Runnable {
 
@@ -38,9 +39,18 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
+            //log in section
             username= username.trim();
+
             user= new User(username, true);
             writer.println("Welcome- "+ user.getUserName());
+
+            ArrayList<String> history=ChatHistory.getUserHistory(username);
+            for(String oldMessage: history)
+            {
+                writer.println("HISTORY|"+oldMessage);
+            }
+
             Server.broadcastUserList();
 
             String message;
@@ -48,8 +58,8 @@ public class ClientHandler implements Runnable {
             {
                 String[] parts= message.split("\\|", 2);
 
-                if(parts.length<2 || parts[0].trim().isEmpty() ||
-                parts[0].trim().isEmpty()|| parts[1].trim().isEmpty()) {
+                if(parts.length<2 || parts[0].trim().isEmpty()||
+                        parts[1].trim().isEmpty()) {
                     continue;
                 }
 

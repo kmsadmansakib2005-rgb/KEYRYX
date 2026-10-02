@@ -1,7 +1,7 @@
 package server;
 import model.Message;
-
 import java.io.*;
+import java.util.ArrayList;
 
 public class ChatHistory {
     private static final String FILE_NAME= "chat_history.txt";
@@ -41,5 +41,31 @@ public class ChatHistory {
 
             System.out.println("Could not read chat history");
         }
+    }
+
+    public static ArrayList<String> getUserHistory(String username)
+    {
+        ArrayList<String> history= new ArrayList<>();
+
+        try {
+            BufferedReader reader= new BufferedReader(new FileReader(FILE_NAME));
+            String line;
+
+            while((line=reader.readLine())!=null)
+            {
+                if(line.contains("|"+username+" ->")||
+                        line.contains("->"+ username+ " :"))
+                {
+                    history.add(line);
+                }
+            }
+            reader.close();
+        }
+
+        catch (IOException e) {
+            System.out.println("Could not retreive user history");
+        }
+
+        return history;
     }
 }

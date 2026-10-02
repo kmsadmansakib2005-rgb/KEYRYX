@@ -228,7 +228,12 @@ public class ChatGui extends JFrame {
                                     }
                                 }
                             }
-                        } else {
+                        } else if(receivedMessage.startsWith("HISTORY|")){
+                            String oldMessage=receivedMessage.substring(8);
+                            messageArea.append("[previous] "+oldMessage+ " \n");
+                        }
+
+                        else {
                             messageArea.append(receivedMessage + "\n");
                         }
                     });
