@@ -35,7 +35,6 @@ public class ChatHistory {
                 System.out.println(line);
                 line= reader.readLine();
             }
-
             reader.close();
         }
         catch (IOException e) {

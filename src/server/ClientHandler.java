@@ -25,11 +25,20 @@ public class ClientHandler implements Runnable {
             BufferedReader reader= new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
 
-            String username= reader.readLine();
-            user= new User(username, true);
             writer= new PrintWriter(socket.getOutputStream(),
                     true);
 
+            String username= reader.readLine();
+
+            if(username==null || username.trim().isEmpty()||
+            Server.findCleint(username.trim())!=null)
+            {
+                writer.println("Login Failed");
+                return;
+            }
+
+            username= username.trim();
+            user= new User(username, true);
             writer.println("Welcome- "+ user.getUserName());
             Server.broadcastUserList();
 
@@ -37,6 +46,11 @@ public class ClientHandler implements Runnable {
             while ((message = reader.readLine()) != null)
             {
                 String[] parts= message.split("\\|", 2);
+
+                if(parts.length<2 || parts[0].trim().isEmpty()) {
+                    continue;
+                }
+
                 String reciepent= parts[0];
                 String content= parts[1];
 
@@ -58,8 +72,14 @@ public class ClientHandler implements Runnable {
                 }
                 else
                 {
-                    Server.sendMessage(msg.getReceiver(),msg.getTimeStamp()+" | \n"+
-                            msg.getSender()+ ": "+msg.getContent());
+                    String privateMessage= msg.getTimeStamp()+" | \n"+
+                            msg.getSender()+": "+msg.getContent();
+
+                    Server.sendMessage(msg.getReceiver(), privateMessage);
+
+                    if(!msg.getSender().equals(msg.getReceiver())) {
+                        Server.sendMessage(msg.getSender(), privateMessage);
+                    }
                 }
             }
 

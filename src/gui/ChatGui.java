@@ -10,6 +10,7 @@ public class ChatGui extends JFrame {
     private PrintWriter writer;
     private BufferedReader reader;
     private String username;
+    private String welcomeMessage;
 
     public ChatGui() {
         username = JOptionPane.showInputDialog(this,
@@ -28,9 +29,20 @@ public class ChatGui extends JFrame {
             writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println(username);
 
+            //reader
             reader = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
 
+            welcomeMessage= reader.readLine();
+            if("Login Failed".equals(welcomeMessage))
+            {
+                JOptionPane.showMessageDialog(this,
+                        "Username is already taken or invalid",
+                        "Login Failed!", JOptionPane.ERROR_MESSAGE);
+
+                socket.close();
+                return;
+            }
 
             JOptionPane.showMessageDialog(this,
                     "Connected to the server!",
@@ -121,16 +133,21 @@ public class ChatGui extends JFrame {
                 (8, 10, 8, 5));
         chatPanel.add(chatLabel, BorderLayout.NORTH);
 
+        //message area
+
         JTextArea messageArea = new JTextArea();
         messageArea.setEditable(false);
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
+        messageArea.append(welcomeMessage+ "\n");
 
         JScrollPane messageScroll = new JScrollPane(messageArea);
         chatPanel.add(messageScroll, BorderLayout.CENTER);
 
         JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
         JTextField messageInput = new JTextField();
+
+        //send buttton
         JButton sendButton = new JButton("Send");
         sendButton.setFocusable(false);
 
@@ -143,7 +160,13 @@ public class ChatGui extends JFrame {
             String message = messageInput.getText().trim();
 
             if (!message.isEmpty()) {
-                writer.println("ALL|" + message);
+
+                String recipient= userList.getSelectedValue();
+                if(recipient==null || recipient.equals("No users online"))
+                {
+                    recipient= "ALL";
+                }
+                writer.println(recipient+ "|"+ message);
                 // messageArea.append("You: "+message+ "\n");
                 messageInput.setText("");
             }
