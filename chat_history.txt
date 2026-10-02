@@ -43,3 +43,41 @@ Fri Oct 02 04:01:52 GMT+06:00 2026 |sadman ->ALL :hi..how are you
 Fri Oct 02 04:02:33 GMT+06:00 2026 |sadman ->ALL :what are you doint at the late of this night
 Fri Oct 02 04:03:29 GMT+06:00 2026 |rahi ->ALL :hi
 Fri Oct 02 04:03:56 GMT+06:00 2026 |rahi ->ALL :what are you people doing?
+Fri Oct 02 09:50:06 GMT+06:00 2026 |ridy ->ALL :hello sakib
+Fri Oct 02 09:50:22 GMT+06:00 2026 |sadman ->ALL :hello ridy. how are you?
+Fri Oct 02 09:50:59 GMT+06:00 2026 |rahi ->ALL :hi
+Fri Oct 02 09:51:39 GMT+06:00 2026 |ridy ->ALL :ok, bye.see you later
+Fri Oct 02 10:01:27 GMT+06:00 2026 |sakiub ->ALL :dsbff
+Fri Oct 02 10:01:35 GMT+06:00 2026 |sadman ->ALL :|asdnfk
+Fri Oct 02 10:22:00 GMT+06:00 2026 |sakib ->mahi :he mahi, how are you
+Fri Oct 02 10:32:45 GMT+06:00 2026 |mahi ->ALL :hello all
+Fri Oct 02 10:32:54 GMT+06:00 2026 |mahi ->sakib :hello sakib
+Fri Oct 02 10:40:05 GMT+06:00 2026 |sakib ->mahi :hello mahi
+Fri Oct 02 10:40:18 GMT+06:00 2026 |mahi ->sakib :hello sakib
+Fri Oct 02 10:40:33 GMT+06:00 2026 |sakib ->mahi :hello
+Fri Oct 02 10:40:53 GMT+06:00 2026 |sadman ->sakib :hello sakib
+Fri Oct 02 10:41:06 GMT+06:00 2026 |sakib ->sadman :hello sadman
+Fri Oct 02 12:13:37 GMT+06:00 2026 |sakib ->sakib :hello
+Fri Oct 02 12:13:56 GMT+06:00 2026 |sakib ->mahi :I am sakib
+Fri Oct 02 12:36:40 GMT+06:00 2026 |sakib ->ALL :sds
+Fri Oct 02 12:36:58 GMT+06:00 2026 |sadman ->sakib :hello
+Fri Oct 02 12:46:22 GMT+06:00 2026 |sakib ->mahi :hello mahi
+Fri Oct 02 12:46:32 GMT+06:00 2026 |sakib ->ALL :hello everyone
+Fri Oct 02 12:46:44 GMT+06:00 2026 |sadman ->ALL :hi chaps
+Fri Oct 02 12:47:07 GMT+06:00 2026 |sakib ->sadman :don't give message at the group
+Fri Oct 02 12:47:19 GMT+06:00 2026 |sadman ->sakib :why
+Fri Oct 02 12:47:47 GMT+06:00 2026 |sadman ->ALL :everyone..sakib is telling me not to give messages at the group
+Fri Oct 02 12:48:00 GMT+06:00 2026 |sakib ->sadman :motherfucker
+Fri Oct 02 12:48:14 GMT+06:00 2026 |sadman ->ALL :now he is calling me motherfucker
+Fri Oct 02 12:53:52 GMT+06:00 2026 |sakib ->sakib :hi
+Fri Oct 02 12:54:05 GMT+06:00 2026 |sakib ->mahi :hi
+Fri Oct 02 12:54:29 GMT+06:00 2026 |mahi ->sakib :hello
+Fri Oct 02 12:54:37 GMT+06:00 2026 |mahi ->ALL :hello
+Fri Oct 02 13:28:40 GMT+06:00 2026 |mahi ->ALL :hello, mahi
+Fri Oct 02 13:28:56 GMT+06:00 2026 |sakib ->mahi :hiu
+Fri Oct 02 13:30:00 GMT+06:00 2026 |mahi ->ALL :hi everyone
+Fri Oct 02 13:30:15 GMT+06:00 2026 |mahi ->sadman :hello sadman
+Fri Oct 02 13:30:52 GMT+06:00 2026 |sakib ->mahi :hi
+Fri Oct 02 13:33:26 GMT+06:00 2026 |sakib ->mahi :hi
+Fri Oct 02 13:36:21 GMT+06:00 2026 |mahi ->sadman :hello sadman
+Fri Oct 02 13:36:40 GMT+06:00 2026 |mahi ->ALL :hello everyone

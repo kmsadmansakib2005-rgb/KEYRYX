@@ -131,7 +131,37 @@ public class ChatGui extends JFrame {
         chatLabel.setFont(new Font("Arial", Font.BOLD, 15));
         chatLabel.setBorder(BorderFactory.createEmptyBorder
                 (8, 10, 8, 5));
-        chatPanel.add(chatLabel, BorderLayout.NORTH);
+
+        //reciepent selection listener
+        userList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String selectedUser = userList.getSelectedValue();
+
+                if (selectedUser != null &&
+                        !selectedUser.equals("No users online")) {
+                    chatLabel.setText("Private Chat — " + selectedUser);
+                } else {
+                    chatLabel.setText("Chatroom — Everyone");
+                }
+            }
+        });
+
+        //group chat label
+        JButton groupChatButton= new JButton("Group Chat");
+        groupChatButton.setFocusable(false);
+
+        groupChatButton.addActionListener(e->{
+            userList.clearSelection();
+            chatLabel.setText("Chatroom — Everyone");
+        });
+        chatLabel.setText("Chatroom — Everyone");
+
+        JPanel chatHeader= new JPanel(new BorderLayout());
+        chatHeader.add(chatLabel, BorderLayout.CENTER);
+        chatHeader.add(groupChatButton, BorderLayout.EAST);
+
+        chatPanel.add(chatHeader, BorderLayout.NORTH);
+
 
         //message area
 

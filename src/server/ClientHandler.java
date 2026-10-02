@@ -11,6 +11,7 @@ public class ClientHandler implements Runnable {
     private PrintWriter writer;
     private User user;
 
+
     public ClientHandler(Socket socket, int clientCount)
     {
         this.socket= socket;
@@ -47,7 +48,8 @@ public class ClientHandler implements Runnable {
             {
                 String[] parts= message.split("\\|", 2);
 
-                if(parts.length<2 || parts[0].trim().isEmpty()) {
+                if(parts.length<2 || parts[0].trim().isEmpty() ||
+                parts[0].trim().isEmpty()|| parts[1].trim().isEmpty()) {
                     continue;
                 }
 
@@ -65,20 +67,31 @@ public class ClientHandler implements Runnable {
                 System.out.println(msg.getTimeStamp()+" | "+msg.getSender()+ " says: "+
                         msg.getContent());
 
-                if(msg.getReceiver().equals("ALL"))
+                if (msg.getReceiver().equals("ALL"))
                 {
-                    Server.broadcastMessage(msg.getTimeStamp()+" | \n"+msg.getSender()+
-                            " : "+ msg.getContent());
+                    String groupMessage = "GROUP|" +
+                            msg.getTimeStamp() + " | \n" +
+                            msg.getSender() + ": " + msg.getContent();
+
+                    Server.broadcastMessage(groupMessage);
                 }
                 else
                 {
-                    String privateMessage= msg.getTimeStamp()+" | \n"+
-                            msg.getSender()+": "+msg.getContent();
+                    String privateMessage = "PRIVATE|" +
+                            msg.getSender() + "|" +
+                            msg.getTimeStamp() + " | \n" +
+                            msg.getSender() + ": " + msg.getContent();
 
                     Server.sendMessage(msg.getReceiver(), privateMessage);
 
-                    if(!msg.getSender().equals(msg.getReceiver())) {
-                        Server.sendMessage(msg.getSender(), privateMessage);
+                    if (!msg.getSender().equals(msg.getReceiver()))
+                    {
+                        String senderCopy = "PRIVATE|" +
+                                msg.getReceiver() + "|" +
+                                msg.getTimeStamp() + " | \n" +
+                                msg.getSender() + ": " + msg.getContent();
+
+                        Server.sendMessage(msg.getSender(), senderCopy);
                     }
                 }
             }
