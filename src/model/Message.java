@@ -1,10 +1,10 @@
 package model;
 
 public class Message {
-   private String sender;
-   private String receiver;
-   private String content;
-   private String timeStamp; /* timeStmp is used to understand
+   private final String sender;
+   private final String receiver;
+   private final String content;
+   private final String timeStamp; /* timeStmp is used to understand
                       in which time the message
                       is sent or received*/
 

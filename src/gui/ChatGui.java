@@ -4,9 +4,14 @@ import java.net.*;
 import java.io.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 
 import client.FileSender;
 import client.FileTransferClient;
+import notification.ChatNotification;
+import notification.AppNotification;
+
 
 public class ChatGui extends JFrame {
 
@@ -14,6 +19,7 @@ public class ChatGui extends JFrame {
     private BufferedReader reader;
     private String username;
     private String welcomeMessage;
+    private TrayIcon trayIcon;
 
     public ChatGui() {
         username = JOptionPane.showInputDialog(this,
@@ -62,6 +68,20 @@ public class ChatGui extends JFrame {
         ImageIcon image = new ImageIcon(
                 ChatGui.class.getResource("img.png"));
         this.setIconImage(image.getImage());
+
+        if(SystemTray.isSupported())
+        {
+            try {
+                SystemTray tray= SystemTray.getSystemTray();
+                trayIcon= new TrayIcon(image.getImage(), "KEYRYX");
+                trayIcon.setImageAutoSize(true);
+
+                tray.add(trayIcon);
+            } catch (AWTException e)
+            {
+                System.out.println("Could not add tray icon: "+e.getMessage());
+            }
+        }
 
         this.setTitle("Keyryx | A LAN Chat Application");
         this.setSize(720, 420);
@@ -203,10 +223,10 @@ public class ChatGui extends JFrame {
 
         //open file buuton
         JButton openFileButton= new JButton("Open file");
-        sendButton.setFocusable(false);
+        openFileButton.setFocusable(false);
 
 
-        JPanel buttonPanel= new JPanel(new GridLayout(1, 2, 5, 0));
+        JPanel buttonPanel= new JPanel(new GridLayout(1, 3, 5, 0));
         buttonPanel.add(sendButton);
         buttonPanel.add(sendFileButton);
         buttonPanel.add(openFileButton);
@@ -311,6 +331,7 @@ public class ChatGui extends JFrame {
 
         this.add(chatPanel, BorderLayout.CENTER);
 
+
         //receiver thread
         Thread receiverThread = new Thread(() -> {
             try {
@@ -340,6 +361,14 @@ public class ChatGui extends JFrame {
 
                         else {
                             messageArea.append(receivedMessage + "\n");
+                            if ((getExtendedState() & JFrame.ICONIFIED) != 0) {
+                                AppNotification notification =
+                                        new ChatNotification(receivedMessage);
+
+                                showDesktopNotification(
+                                        notification.getNotificationMessage()
+                                );
+                            }
                         }
                     });
                 }
@@ -360,6 +389,18 @@ public class ChatGui extends JFrame {
         headerPanel.add(title);
 
         this.setVisible(true);
+    }
+    //notification
+    public void showDesktopNotification(String message)
+    {
+        if(trayIcon==null)
+        {
+            System.out.println("KEYRYX tray icon is not available");
+            return;
+        }
+        trayIcon.displayMessage(
+                "KEYRYX", message,TrayIcon.MessageType.INFO);
+
     }
 
     public static void main(String[] args) {
