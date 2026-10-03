@@ -102,7 +102,8 @@ public class ChatGui extends JFrame {
 
         JLabel connectionLabel = new JLabel("Staus: Connected");
         JLabel usernameLabel = new JLabel("User: " + username);
-        JLabel serverLabel = new JLabel("Server: localhost:192.168.0.137:1000");
+        JLabel serverLabel = new JLabel("<html>Server: localhost:<br>" +
+                "192.168.0.137:1000" + "</html>");
 
         statusPanel.add(statusTitle);
         statusPanel.add(Box.createVerticalStrut(5));
