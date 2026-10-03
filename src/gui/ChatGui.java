@@ -5,6 +5,9 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 
+import client.FileSender;
+import client.FileTransferClient;
+
 public class ChatGui extends JFrame {
 
     private PrintWriter writer;
@@ -18,7 +21,7 @@ public class ChatGui extends JFrame {
                 "KEYRYX Login", JOptionPane.QUESTION_MESSAGE);
 
         if (username == null || username.trim().isEmpty()) {
-            return;
+                return;
         }
         username = username.trim();
 
@@ -55,7 +58,6 @@ public class ChatGui extends JFrame {
                     "connection failed!", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
 
         ImageIcon image = new ImageIcon(
                 ChatGui.class.getResource("img.png"));
@@ -177,15 +179,43 @@ public class ChatGui extends JFrame {
         JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
         JTextField messageInput = new JTextField();
 
+        //file receiver thread
+        Thread fileReceiverThread = new Thread(() -> {
+            FileTransferClient fileClient = new FileTransferClient();
+
+            fileClient.connectAndListen("localhost", username,
+                    message -> SwingUtilities.invokeLater(() ->
+                            messageArea.append("[FILE] " + message + "\n")));
+        });
+
+        fileReceiverThread.setDaemon(true);
+        fileReceiverThread.start();
+
+
         //send buttton
         JButton sendButton = new JButton("Send");
         sendButton.setFocusable(false);
 
+        //send fileButton
+        JButton sendFileButton= new JButton("Send File");
+        sendFileButton.setFocusable(false);
+
+        //open file buuton
+        JButton openFileButton= new JButton("Open file");
+        sendButton.setFocusable(false);
+
+
+        JPanel buttonPanel= new JPanel(new GridLayout(1, 2, 5, 0));
+        buttonPanel.add(sendButton);
+        buttonPanel.add(sendFileButton);
+        buttonPanel.add(openFileButton);
+
         inputPanel.add(messageInput, BorderLayout.CENTER);
-        inputPanel.add(sendButton, BorderLayout.EAST);
+        inputPanel.add(buttonPanel, BorderLayout.EAST);
 
         chatPanel.add(inputPanel, BorderLayout.SOUTH);
 
+        //send-button actionlistner
         sendButton.addActionListener(e -> {
             String message = messageInput.getText().trim();
 
@@ -203,6 +233,80 @@ public class ChatGui extends JFrame {
         });
         messageInput.addActionListener(e -> sendButton.doClick());
 
+        //sendFile button actionlister
+        sendFileButton.addActionListener(e->{
+
+            String recipient= userList.getSelectedValue();
+
+            if(recipient==null || recipient.equals("No users online")
+            ||recipient.equals(username))
+            {
+                JOptionPane.showMessageDialog(this,
+                        "Please select another user first","Select Recipient",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+
+            JFileChooser fileChooser= new JFileChooser();
+            int result= fileChooser.showOpenDialog(this);
+
+            if(result== JFileChooser.APPROVE_OPTION)
+            {
+                File selectedFile= fileChooser.getSelectedFile();
+
+                Thread fileSendingThread = new Thread(() -> {
+                    FileSender sender = new FileSender();
+
+                    boolean success = sender.sendFile(
+                            "localhost", recipient, selectedFile);
+
+                    SwingUtilities.invokeLater(() -> {
+                        if (success) {
+                            messageArea.append("[FILE] Sent "
+                                    + selectedFile.getName()
+                                    + " to " + recipient + "\n");
+                        } else {
+                            messageArea.append("[FILE] Failed to send "
+                                    + selectedFile.getName() + "\n");
+                        }
+                    });
+                });
+
+                fileSendingThread.start();
+            }
+
+        });
+
+        //open file buttons actionlistner
+        openFileButton.addActionListener(actionEvent -> {
+            File receivedFolder = new File("received_files");
+
+            if (!receivedFolder.exists()) {
+                JOptionPane.showMessageDialog(this,
+                        "No received files folder found.",
+                        "Open File",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            JFileChooser fileChooser = new JFileChooser(receivedFolder);
+
+            int result = fileChooser.showOpenDialog(this);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+
+                try {
+                    Desktop.getDesktop().open(selectedFile);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Could not open the file: " + ex.getMessage(),
+                            "Open File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
 
         this.add(chatPanel, BorderLayout.CENTER);
 

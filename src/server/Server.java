@@ -8,6 +8,9 @@ public class Server {
 
     public static void main(String[] args)
     {
+        Thread fileServerThread= new Thread(new FileTransferServer());
+        fileServerThread.start();
+
         try
         {
             ServerSocket serverSocket= new ServerSocket(1000);
