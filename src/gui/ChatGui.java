@@ -28,7 +28,7 @@ public class ChatGui extends JFrame {
         Socket socket;
 
         try {
-            socket = new Socket("localHost", 1000);
+            socket = new Socket("192.168.0.137", 1000);
             writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println(username);
 
@@ -102,7 +102,7 @@ public class ChatGui extends JFrame {
 
         JLabel connectionLabel = new JLabel("Staus: Connected");
         JLabel usernameLabel = new JLabel("User: " + username);
-        JLabel serverLabel = new JLabel("Server: localhost:1000");
+        JLabel serverLabel = new JLabel("Server: localhost:192.168.0.137:1000");
 
         statusPanel.add(statusTitle);
         statusPanel.add(Box.createVerticalStrut(5));
@@ -183,7 +183,7 @@ public class ChatGui extends JFrame {
         Thread fileReceiverThread = new Thread(() -> {
             FileTransferClient fileClient = new FileTransferClient();
 
-            fileClient.connectAndListen("localhost", username,
+            fileClient.connectAndListen("192.168.0.137", username,
                     message -> SwingUtilities.invokeLater(() ->
                             messageArea.append("[FILE] " + message + "\n")));
         });
@@ -259,7 +259,7 @@ public class ChatGui extends JFrame {
                     FileSender sender = new FileSender();
 
                     boolean success = sender.sendFile(
-                            "localhost", recipient, selectedFile);
+                            "192.168.0.137", recipient, selectedFile);
 
                     SwingUtilities.invokeLater(() -> {
                         if (success) {
