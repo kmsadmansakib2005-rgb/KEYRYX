@@ -22,6 +22,7 @@ public class ChatGui extends JFrame {
     private TrayIcon trayIcon;
 
     public ChatGui() {
+        showSplashScreen();
         username = JOptionPane.showInputDialog(this,
                 "Enter username: ",
                 "KEYRYX Login", JOptionPane.QUESTION_MESSAGE);
@@ -401,6 +402,49 @@ public class ChatGui extends JFrame {
         trayIcon.displayMessage(
                 "KEYRYX", message,TrayIcon.MessageType.INFO);
 
+    }
+
+    //splash screen
+    public void showSplashScreen()
+    {
+        JWindow splash= new JWindow();
+
+        ImageIcon OriginalImage= new ImageIcon(
+                ChatGui.class.getResource("img_1.png"));
+
+        Image ScaledImage= OriginalImage.getImage().getScaledInstance(
+                720, 393, Image.SCALE_SMOOTH);
+        ImageIcon logo= new ImageIcon(ScaledImage);
+
+        JLabel imageLabel= new JLabel(logo);
+
+        JLabel loadingLabel= new JLabel("Loading KEYRYX.......",
+                SwingConstants.CENTER);
+        loadingLabel.setFont(new Font("Times New Roman", Font.BOLD, 16));
+        loadingLabel.setForeground(new Color(37, 142, 155));
+        loadingLabel.setBackground(new Color(220, 220,220));
+        loadingLabel.setOpaque(true);
+        loadingLabel.setBorder(BorderFactory.createEmptyBorder(10,
+                0, 15, 0));
+
+        JPanel panel= new JPanel(new BorderLayout());
+       // panel.setBackground(Color.WHITE);
+        panel.setBackground(new Color(220, 220, 220));
+        panel.add(imageLabel, BorderLayout.CENTER);
+        panel.add(loadingLabel, BorderLayout.SOUTH);
+
+        splash.setContentPane(panel);
+        splash.setSize(720, 420);
+        //splash.pack();
+        splash.setLocationRelativeTo(null);
+        splash.setVisible(true);
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        splash.dispose();
     }
 
     public static void main(String[] args) {
