@@ -18,6 +18,7 @@ public class ChatGui extends JFrame {
     private PrintWriter writer;
     private BufferedReader reader;
     private String username;
+    private String serverIP;
     private String welcomeMessage;
     private TrayIcon trayIcon;
 
@@ -32,10 +33,20 @@ public class ChatGui extends JFrame {
         }
         username = username.trim();
 
+        serverIP=JOptionPane.showInputDialog(this,
+                "Enter IP adress: ",
+                "KEYRYX Server", JOptionPane.QUESTION_MESSAGE);
+
+        if(serverIP==null || serverIP.trim().isEmpty())
+        {
+            return;
+        }
+
+        serverIP=serverIP.trim();
         Socket socket;
 
         try {
-            socket = new Socket("192.168.0.137", 1000);
+            socket = new Socket(serverIP, 1000);
             writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println(username);
 
@@ -124,7 +135,7 @@ public class ChatGui extends JFrame {
         JLabel connectionLabel = new JLabel("Staus: Connected");
         JLabel usernameLabel = new JLabel("User: " + username);
         JLabel serverLabel = new JLabel("<html>Server: localhost:<br>" +
-                "192.168.0.137:1000" + "</html>");
+                serverIP+": 1000" + "</html>");
 
         statusPanel.add(statusTitle);
         statusPanel.add(Box.createVerticalStrut(5));
@@ -205,7 +216,7 @@ public class ChatGui extends JFrame {
         Thread fileReceiverThread = new Thread(() -> {
             FileTransferClient fileClient = new FileTransferClient();
 
-            fileClient.connectAndListen("192.168.0.137", username,
+            fileClient.connectAndListen(serverIP, username,
                     message -> SwingUtilities.invokeLater(() ->
                             messageArea.append("[FILE] " + message + "\n")));
         });
@@ -281,7 +292,7 @@ public class ChatGui extends JFrame {
                     FileSender sender = new FileSender();
 
                     boolean success = sender.sendFile(
-                            "192.168.0.137", recipient, selectedFile);
+                            serverIP, recipient, selectedFile);
 
                     SwingUtilities.invokeLater(() -> {
                         if (success) {
@@ -440,7 +451,7 @@ public class ChatGui extends JFrame {
         splash.setVisible(true);
 
         try {
-            Thread.sleep(1500);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
