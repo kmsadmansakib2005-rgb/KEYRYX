@@ -22,16 +22,16 @@ import notification.AppNotification;
  */
 public class ChatGui extends JFrame {
 
-    private static final Color BG = new Color(16, 43, 38);
-    private static final Color SIDEBAR = new Color(24, 58, 50);
-    private static final Color CHAT = new Color(21, 51, 45);
-    private static final Color SURFACE = new Color(30, 67, 57);
-    private static final Color BUBBLE_IN = new Color(36, 72, 62);
-    private static final Color GREEN = new Color(40, 118, 91);
-    private static final Color MINT = new Color(168, 230, 197);
-    private static final Color TEXT = new Color(229, 242, 235);
-    private static final Color MUTED = new Color(151, 180, 164);
-    private static final Color BORDER = new Color(53, 83, 72);
+    private static final Color BG = new Color(16, 30, 27);
+    private static final Color SIDEBAR = new Color(25, 51, 44);
+    private static final Color CHAT = new Color(20, 41, 35);
+    private static final Color SURFACE = new Color(30, 59, 50);
+    private static final Color BUBBLE_IN = new Color(41, 72, 60);
+    private static final Color GREEN = new Color(35, 107, 80);
+    private static final Color MINT = new Color(184, 229, 205);
+    private static final Color TEXT = new Color(230, 242, 234);
+    private static final Color MUTED = new Color(145, 179, 162);
+    private static final Color BORDER = new Color(52, 84, 72);
 
     private PrintWriter writer;
     private BufferedReader reader;
@@ -167,7 +167,7 @@ public class ChatGui extends JFrame {
 
     private JPanel buildNavigationRail() {
         JPanel rail = new JPanel();
-        rail.setBackground(new Color(13, 36, 32));
+        rail.setBackground(new Color(11, 23, 20));
         rail.setPreferredSize(new Dimension(72, 0));
         rail.setBorder(new EmptyBorder(22, 10, 18, 10));
         rail.setLayout(new BoxLayout(rail, BoxLayout.Y_AXIS));
@@ -203,7 +203,7 @@ public class ChatGui extends JFrame {
         button.setToolTipText(tooltip);
         button.setFont(new Font("SansSerif", Font.PLAIN, 20));
         button.setForeground(active ? MINT : MUTED);
-        button.setBackground(active ? SURFACE : new Color(13, 36, 32));
+        button.setBackground(active ? SURFACE : new Color(11, 23, 20));
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(11, 10, 11, 10));
         button.setMaximumSize(new Dimension(50, 50));
@@ -251,7 +251,7 @@ public class ChatGui extends JFrame {
         JTextField search = new JTextField();
         search.setText("  Search people...");
         search.setForeground(MUTED);
-        search.setBackground(new Color(15, 43, 37));
+        search.setBackground(new Color(20, 41, 35));
         search.setCaretColor(TEXT);
         search.setFont(new Font("SansSerif", Font.PLAIN, 13));
         search.setBorder(BorderFactory.createCompoundBorder(
@@ -473,8 +473,8 @@ public class ChatGui extends JFrame {
         panel.add(network);
         panel.add(Box.createVerticalStrut(14));
 
-        JPanel appearance = settingsCard("APPEARANCE", "Sulphate Green",
-                "The signature KEYRYX dark-green interface theme");
+        JPanel appearance = settingsCard("APPEARANCE", "Midnight Emerald",
+                "The signature KEYRYX deep-emerald interface theme");
         appearance.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(appearance);
         panel.add(Box.createVerticalGlue());
@@ -696,7 +696,7 @@ public class ChatGui extends JFrame {
         bubble.setMaximumSize(new Dimension(560, Integer.MAX_VALUE));
 
         JLabel senderLabel = new JLabel(history ? "HISTORY" : sender);
-        senderLabel.setForeground(mine ? new Color(211, 245, 224) : MINT);
+        senderLabel.setForeground(mine ? new Color(218, 244, 228) : MINT);
         senderLabel.setFont(new Font("SansSerif", Font.BOLD, 10));
 
         JTextArea content = new JTextArea(text);
