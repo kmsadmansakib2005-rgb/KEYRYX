@@ -412,6 +412,7 @@ public class ChatGui extends JFrame {
         messageScroll.setBorder(null);
         messageScroll.getViewport().setBackground(CHAT);
         messageScroll.getVerticalScrollBar().setUnitIncrement(18);
+        styleChatScrollBar(messageScroll.getVerticalScrollBar());
         chat.add(messageScroll, BorderLayout.CENTER);
 
         chat.add(buildComposer(), BorderLayout.SOUTH);
@@ -715,7 +716,20 @@ public class ChatGui extends JFrame {
     }
 
     private void appendHistoryMessage(String history) {
-        appendBubble("Previous message", history, false, true);
+        // Stored format: timestamp |sender ->receiver :message
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(
+                "^(.*?)\\s*\\|\\s*(.*?)\\s*->\\s*(.*?)\\s*:\\s*(.*)$")
+                .matcher(history);
+        if (matcher.matches()) {
+            String timestamp = matcher.group(1).trim();
+            String sender = matcher.group(2).trim();
+            String receiver = matcher.group(3).trim();
+            String content = matcher.group(4).trim();
+            appendBubble(sender + "  →  " + receiver, content,
+                    sender.equals(username), true, timestamp);
+        } else {
+            appendBubble("Previous message", history, false, true, "");
+        }
     }
 
     private void appendSystemMessage(String text) {
@@ -733,6 +747,12 @@ public class ChatGui extends JFrame {
     }
 
     private void appendBubble(String sender, String text, boolean mine, boolean history) {
+        appendBubble(sender, text, mine, history,
+                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+    }
+
+    private void appendBubble(String sender, String text, boolean mine,
+            boolean history, String timeText) {
         JPanel row = new JPanel(new BorderLayout());
         row.setOpaque(false);
         row.setBorder(new EmptyBorder(4, 0, 8, 0));
@@ -754,13 +774,24 @@ public class ChatGui extends JFrame {
         content.setForeground(TEXT);
         content.setFont(new Font("SansSerif", Font.PLAIN, 13));
         content.setFocusable(false);
-        content.setMaximumSize(new Dimension(500, Integer.MAX_VALUE));
+        content.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        FontMetrics metrics = content.getFontMetrics(content.getFont());
+        int textWidth = 0;
+        for (String line : text.split("\\n", -1)) {
+            textWidth = Math.max(textWidth, metrics.stringWidth(line));
+        }
+        int bubbleTextWidth = Math.max(190, Math.min(420, textWidth + 4));
+        content.setSize(bubbleTextWidth, Short.MAX_VALUE);
+        Dimension contentSize = content.getPreferredSize();
+        content.setPreferredSize(new Dimension(bubbleTextWidth, contentSize.height));
+        content.setMaximumSize(new Dimension(bubbleTextWidth, Integer.MAX_VALUE));
+        content.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         bubble.add(senderLabel);
         bubble.add(Box.createVerticalStrut(5));
         bubble.add(content);
 
-        JLabel time = new JLabel(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        JLabel time = new JLabel(timeText);
         time.setForeground(mine ? new Color(226, 220, 255) : MUTED);
         time.setFont(new Font("SansSerif", Font.PLAIN, 9));
         time.setAlignmentX(Component.RIGHT_ALIGNMENT);
@@ -787,6 +818,50 @@ public class ChatGui extends JFrame {
         if (trayIcon != null) {
             trayIcon.displayMessage("KEYRYX", message, TrayIcon.MessageType.INFO);
         }
+    }
+
+    private void styleChatScrollBar(JScrollBar scrollBar) {
+        scrollBar.setPreferredSize(new Dimension(9, 0));
+        scrollBar.setBackground(CHAT);
+        scrollBar.setForeground(SURFACE);
+        scrollBar.setBorder(null);
+        scrollBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+            @Override protected void configureScrollBarColors() {
+                thumbColor = new Color(65, 79, 117);
+                trackColor = CHAT;
+            }
+            @Override protected JButton createDecreaseButton(int orientation) {
+                return zeroScrollButton();
+            }
+            @Override protected JButton createIncreaseButton(int orientation) {
+                return zeroScrollButton();
+            }
+            @Override protected void paintThumb(Graphics g, JComponent c,
+                    Rectangle bounds) {
+                if (bounds.isEmpty() || !scrollbar.isEnabled()) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(thumbColor);
+                g2.fillRoundRect(bounds.x + 2, bounds.y + 2,
+                        Math.max(1, bounds.width - 4), Math.max(1, bounds.height - 4),
+                        8, 8);
+                g2.dispose();
+            }
+            @Override protected void paintTrack(Graphics g, JComponent c,
+                    Rectangle bounds) {
+                g.setColor(trackColor);
+                g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            }
+            private JButton zeroScrollButton() {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(0, 0));
+                button.setMinimumSize(new Dimension(0, 0));
+                button.setMaximumSize(new Dimension(0, 0));
+                button.setVisible(false);
+                return button;
+            }
+        });
     }
 
     private void addButtonHover(JButton button, Color normal, Color hover) {
