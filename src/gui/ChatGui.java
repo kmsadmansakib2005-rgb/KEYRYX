@@ -22,16 +22,16 @@ import notification.AppNotification;
  */
 public class ChatGui extends JFrame {
 
-    private static final Color BG = new Color(16, 30, 27);
-    private static final Color SIDEBAR = new Color(25, 51, 44);
-    private static final Color CHAT = new Color(20, 41, 35);
-    private static final Color SURFACE = new Color(30, 59, 50);
-    private static final Color BUBBLE_IN = new Color(41, 72, 60);
-    private static final Color GREEN = new Color(35, 107, 80);
-    private static final Color MINT = new Color(184, 229, 205);
-    private static final Color TEXT = new Color(230, 242, 234);
-    private static final Color MUTED = new Color(145, 179, 162);
-    private static final Color BORDER = new Color(52, 84, 72);
+    private static final Color BG = new Color(9, 14, 29);
+    private static final Color SIDEBAR = new Color(17, 26, 47);
+    private static final Color CHAT = new Color(13, 22, 41);
+    private static final Color SURFACE = new Color(27, 39, 65);
+    private static final Color BUBBLE_IN = new Color(35, 49, 76);
+    private static final Color GREEN = new Color(108, 92, 231);
+    private static final Color MINT = new Color(103, 232, 249);
+    private static final Color TEXT = new Color(241, 245, 255);
+    private static final Color MUTED = new Color(153, 169, 199);
+    private static final Color BORDER = new Color(45, 61, 94);
 
     private PrintWriter writer;
     private BufferedReader reader;
@@ -167,7 +167,7 @@ public class ChatGui extends JFrame {
 
     private JPanel buildNavigationRail() {
         JPanel rail = new JPanel();
-        rail.setBackground(new Color(11, 23, 20));
+        rail.setBackground(new Color(7, 11, 24));
         rail.setPreferredSize(new Dimension(72, 0));
         rail.setBorder(new EmptyBorder(22, 10, 18, 10));
         rail.setLayout(new BoxLayout(rail, BoxLayout.Y_AXIS));
@@ -203,12 +203,14 @@ public class ChatGui extends JFrame {
         button.setToolTipText(tooltip);
         button.setFont(new Font("SansSerif", Font.PLAIN, 20));
         button.setForeground(active ? MINT : MUTED);
-        button.setBackground(active ? SURFACE : new Color(11, 23, 20));
+        button.setBackground(active ? SURFACE : new Color(7, 11, 24));
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(11, 10, 11, 10));
         button.setMaximumSize(new Dimension(50, 50));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(button, active ? SURFACE : new Color(7, 11, 24),
+                active ? new Color(48, 62, 99) : new Color(25, 37, 64));
         button.addActionListener(e -> contentCards.show(contentPanel, card));
         return button;
     }
@@ -251,7 +253,7 @@ public class ChatGui extends JFrame {
         JTextField search = new JTextField();
         search.setText("  Search people...");
         search.setForeground(MUTED);
-        search.setBackground(new Color(20, 41, 35));
+        search.setBackground(new Color(13, 22, 41));
         search.setCaretColor(TEXT);
         search.setFont(new Font("SansSerif", Font.PLAIN, 13));
         search.setBorder(BorderFactory.createCompoundBorder(
@@ -327,7 +329,9 @@ public class ChatGui extends JFrame {
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(CHAT);
-        header.setBorder(new EmptyBorder(20, 28, 18, 28));
+        header.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER),
+                new EmptyBorder(20, 28, 18, 28)));
 
         JPanel identity = new JPanel(new BorderLayout(12, 0));
         identity.setOpaque(false);
@@ -381,7 +385,9 @@ public class ChatGui extends JFrame {
     private JPanel buildComposer() {
         JPanel footer = new JPanel(new BorderLayout(10, 0));
         footer.setBackground(CHAT);
-        footer.setBorder(new EmptyBorder(14, 24, 22, 24));
+        footer.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, BORDER),
+                new EmptyBorder(14, 24, 22, 24)));
 
         JPanel composer = new JPanel(new BorderLayout(10, 0));
         composer.setBackground(SURFACE);
@@ -397,6 +403,7 @@ public class ChatGui extends JFrame {
         attach.setBorder(null);
         attach.setFocusPainted(false);
         attach.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(attach, SURFACE, new Color(43, 59, 91));
         attach.addActionListener(e -> sendFile());
 
         messageInput = new JTextField();
@@ -415,6 +422,7 @@ public class ChatGui extends JFrame {
         send.setFocusPainted(false);
         send.setBorder(new EmptyBorder(11, 17, 11, 17));
         send.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(send, GREEN, new Color(133, 119, 255));
         send.addActionListener(e -> sendMessage());
 
         composer.add(attach, BorderLayout.WEST);
@@ -422,7 +430,7 @@ public class ChatGui extends JFrame {
         composer.add(send, BorderLayout.EAST);
         footer.add(composer, BorderLayout.CENTER);
 
-        JLabel hint = new JLabel("Messages are sent over your local network");
+        JLabel hint = new JLabel("PRIVATE NETWORK  •  KEYRYX CONNECTION");
         hint.setForeground(MUTED);
         hint.setFont(new Font("SansSerif", Font.PLAIN, 10));
         hint.setBorder(new EmptyBorder(8, 4, 0, 0));
@@ -473,8 +481,8 @@ public class ChatGui extends JFrame {
         panel.add(network);
         panel.add(Box.createVerticalStrut(14));
 
-        JPanel appearance = settingsCard("APPEARANCE", "Midnight Emerald",
-                "The signature KEYRYX deep-emerald interface theme");
+        JPanel appearance = settingsCard("APPEARANCE", "Aurora Night",
+                "Midnight navy surfaces with electric violet and cyan accents");
         appearance.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(appearance);
         panel.add(Box.createVerticalGlue());
@@ -485,7 +493,9 @@ public class ChatGui extends JFrame {
         JPanel card = new JPanel();
         card.setOpaque(true);
         card.setBackground(SIDEBAR);
-        card.setBorder(new EmptyBorder(18, 20, 18, 20));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(18, 20, 18, 20)));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setMaximumSize(new Dimension(650, 105));
         JLabel small = new JLabel(eyebrow);
@@ -735,6 +745,22 @@ public class ChatGui extends JFrame {
         }
     }
 
+    private void addButtonHover(JButton button, Color normal, Color hover) {
+        button.setOpaque(true);
+        button.setBorderPainted(true);
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent event) {
+                button.setBackground(hover);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent event) {
+                button.setBackground(normal);
+            }
+        });
+    }
+
     private JButton subtleButton(String label) {
         JButton button = new JButton(label);
         button.setForeground(MINT);
@@ -745,6 +771,7 @@ public class ChatGui extends JFrame {
                 BorderFactory.createLineBorder(BORDER),
                 new EmptyBorder(8, 12, 8, 12)));
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(button, SURFACE, new Color(43, 59, 91));
         return button;
     }
 
@@ -821,8 +848,10 @@ public class ChatGui extends JFrame {
             Graphics2D g = (Graphics2D) graphics.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(fill);
+            g.setPaint(new GradientPaint(0, 0, fill.brighter(), 0, getHeight(), fill));
             g.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g.setColor(new Color(255, 255, 255, 24));
+            g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
             g.dispose();
             super.paintComponent(graphics);
         }
