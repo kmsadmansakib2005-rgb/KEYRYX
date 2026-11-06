@@ -403,7 +403,7 @@ public class ChatGui extends JFrame {
         header.add(actions, BorderLayout.EAST);
         chat.add(header, BorderLayout.NORTH);
 
-        messageList = new JPanel();
+        messageList = new MessagePanel();
         messageList.setBackground(CHAT);
         messageList.setLayout(new BoxLayout(messageList, BoxLayout.Y_AXIS));
         messageList.setBorder(new EmptyBorder(16, 28, 22, 28));
@@ -725,8 +725,13 @@ public class ChatGui extends JFrame {
             String sender = matcher.group(2).trim();
             String receiver = matcher.group(3).trim();
             String content = matcher.group(4).trim();
+            java.util.regex.Matcher timeMatcher = java.util.regex.Pattern
+                    .compile(".*?(\\d{2}:\\d{2}):\\d{2}.*")
+                    .matcher(timestamp);
+            String displayTime = timeMatcher.matches()
+                    ? timeMatcher.group(1) : timestamp;
             appendBubble(sender + "  →  " + receiver, content,
-                    sender.equals(username), true, timestamp);
+                    sender.equals(username), true, displayTime);
         } else {
             appendBubble("Previous message", history, false, true, "");
         }
@@ -780,7 +785,7 @@ public class ChatGui extends JFrame {
         for (String line : text.split("\\n", -1)) {
             textWidth = Math.max(textWidth, metrics.stringWidth(line));
         }
-        int bubbleTextWidth = Math.max(190, Math.min(420, textWidth + 4));
+        int bubbleTextWidth = Math.max(130, Math.min(420, textWidth + 4));
         content.setSize(bubbleTextWidth, Short.MAX_VALUE);
         Dimension contentSize = content.getPreferredSize();
         content.setPreferredSize(new Dimension(bubbleTextWidth, contentSize.height));
@@ -944,6 +949,29 @@ public class ChatGui extends JFrame {
             g.drawOval(1, 1, getWidth() - 3, getHeight() - 3);
             g.dispose();
             super.paintComponent(graphics);
+        }
+    }
+
+    private static class MessagePanel extends JPanel implements Scrollable {
+        MessagePanel() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+        @Override public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+        @Override public int getScrollableUnitIncrement(Rectangle visibleRect,
+                int orientation, int direction) {
+            return 18;
+        }
+        @Override public int getScrollableBlockIncrement(Rectangle visibleRect,
+                int orientation, int direction) {
+            return Math.max(visibleRect.height - 18, 18);
+        }
+        @Override public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+        @Override public boolean getScrollableTracksViewportHeight() {
+            return false;
         }
     }
 
