@@ -7,6 +7,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 
@@ -54,6 +56,7 @@ public class ChatGui extends JFrame {
     private String pendingMessageHeader;
     private String pendingMessageType;
     private boolean connected;
+    private final java.util.List<JButton> navigationButtons = new ArrayList<JButton>();
 
     public ChatGui() {
         showSplashScreen();
@@ -211,8 +214,25 @@ public class ChatGui extends JFrame {
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addButtonHover(button, active ? SURFACE : new Color(7, 11, 24),
                 active ? new Color(48, 62, 99) : new Color(25, 37, 64));
-        button.addActionListener(e -> contentCards.show(contentPanel, card));
+        navigationButtons.add(button);
+        button.addActionListener(e -> {
+            contentCards.show(contentPanel, card);
+            setActiveNavigation(button);
+        });
         return button;
+    }
+
+    private void setActiveNavigation(JButton selected) {
+        for (JButton button : navigationButtons) {
+            boolean active = button == selected;
+            button.setForeground(active ? MINT : MUTED);
+            button.setBackground(active ? SURFACE : new Color(7, 11, 24));
+            button.setBorder(active
+                    ? BorderFactory.createCompoundBorder(
+                            BorderFactory.createMatteBorder(0, 3, 0, 0, MINT),
+                            BorderFactory.createEmptyBorder(11, 7, 11, 10))
+                    : BorderFactory.createEmptyBorder(11, 10, 11, 10));
+        }
     }
 
     private JPanel buildConversationSidebar() {
@@ -251,7 +271,8 @@ public class ChatGui extends JFrame {
         top.add(Box.createVerticalStrut(10));
 
         JTextField search = new JTextField();
-        search.setText("  Search people...");
+        final String searchHint = "Search people...";
+        search.setText(searchHint);
         search.setForeground(MUTED);
         search.setBackground(new Color(13, 22, 41));
         search.setCaretColor(TEXT);
@@ -260,6 +281,20 @@ public class ChatGui extends JFrame {
                 BorderFactory.createLineBorder(BORDER),
                 new EmptyBorder(10, 8, 10, 8)));
         top.add(search);
+        search.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) {
+                if (search.getText().trim().equals(searchHint)) {
+                    search.setText("");
+                    search.setForeground(TEXT);
+                }
+            }
+            @Override public void focusLost(FocusEvent e) {
+                if (search.getText().trim().isEmpty()) {
+                    search.setText(searchHint);
+                    search.setForeground(MUTED);
+                }
+            }
+        });
         side.add(top, BorderLayout.NORTH);
 
         userListModel = new DefaultListModel<String>();
@@ -281,6 +316,7 @@ public class ChatGui extends JFrame {
             @Override
             public void keyReleased(KeyEvent e) {
                 String query = search.getText().trim().toLowerCase();
+                if (query.equals(searchHint.toLowerCase())) return;
                 for (int i = 0; i < userListModel.size(); i++) {
                     if (userListModel.get(i).toLowerCase().contains(query)) {
                         userList.setSelectedIndex(i);
@@ -361,6 +397,7 @@ public class ChatGui extends JFrame {
         });
         JButton filesButton = subtleButton("Files");
         filesButton.addActionListener(e -> openReceivedFile());
+        actions.add(statusPill("● CONNECTED"));
         actions.add(groupButton);
         actions.add(filesButton);
         header.add(actions, BorderLayout.EAST);
@@ -723,6 +760,13 @@ public class ChatGui extends JFrame {
         bubble.add(Box.createVerticalStrut(5));
         bubble.add(content);
 
+        JLabel time = new JLabel(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        time.setForeground(mine ? new Color(226, 220, 255) : MUTED);
+        time.setFont(new Font("SansSerif", Font.PLAIN, 9));
+        time.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        bubble.add(Box.createVerticalStrut(5));
+        bubble.add(time);
+
         if (mine) row.add(bubble, BorderLayout.EAST);
         else row.add(bubble, BorderLayout.WEST);
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -761,6 +805,18 @@ public class ChatGui extends JFrame {
         });
     }
 
+    private JLabel statusPill(String value) {
+        JLabel pill = new JLabel(value);
+        pill.setFont(new Font("SansSerif", Font.BOLD, 9));
+        pill.setForeground(MINT);
+        pill.setOpaque(true);
+        pill.setBackground(new Color(20, 57, 62));
+        pill.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(37, 93, 99)),
+                new EmptyBorder(7, 10, 7, 10)));
+        return pill;
+    }
+
     private JButton subtleButton(String label) {
         JButton button = new JButton(label);
         button.setForeground(MINT);
@@ -776,7 +832,7 @@ public class ChatGui extends JFrame {
     }
 
     private JLabel avatarLabel(String text, int size, Color color) {
-        JLabel label = new JLabel(text, SwingConstants.CENTER);
+        JLabel label = new CircularAvatarLabel(text, size, color);
         label.setPreferredSize(new Dimension(size, size));
         label.setMinimumSize(new Dimension(size, size));
         label.setOpaque(true);
@@ -792,6 +848,29 @@ public class ChatGui extends JFrame {
         if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();
         return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1))
                 .toUpperCase();
+    }
+
+    private static class CircularAvatarLabel extends JLabel {
+        private final Color avatarColor;
+        CircularAvatarLabel(String text, int size, Color color) {
+            super(text, SwingConstants.CENTER);
+            avatarColor = color;
+            setPreferredSize(new Dimension(size, size));
+            setMinimumSize(new Dimension(size, size));
+            setForeground(TEXT);
+            setFont(new Font("SansSerif", Font.BOLD, size > 40 ? 12 : 10));
+            setOpaque(false);
+        }
+        @Override protected void paintComponent(Graphics graphics) {
+            Graphics2D g = (Graphics2D) graphics.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setPaint(new GradientPaint(0, 0, avatarColor.brighter(), getWidth(), getHeight(), avatarColor.darker()));
+            g.fillOval(1, 1, getWidth() - 3, getHeight() - 3);
+            g.setColor(new Color(255, 255, 255, 65));
+            g.drawOval(1, 1, getWidth() - 3, getHeight() - 3);
+            g.dispose();
+            super.paintComponent(graphics);
+        }
     }
 
     private class UserCellRenderer extends JPanel implements ListCellRenderer<String> {
