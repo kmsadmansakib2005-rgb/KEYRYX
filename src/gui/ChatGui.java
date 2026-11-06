@@ -835,8 +835,7 @@ public class ChatGui extends JFrame {
         JLabel label = new CircularAvatarLabel(text, size, color);
         label.setPreferredSize(new Dimension(size, size));
         label.setMinimumSize(new Dimension(size, size));
-        label.setOpaque(true);
-        label.setBackground(color);
+        label.setOpaque(false);
         label.setForeground(TEXT);
         label.setFont(new Font("SansSerif", Font.BOLD, size > 40 ? 12 : 10));
         return label;
