@@ -730,8 +730,18 @@ public class ChatGui extends JFrame {
                     .matcher(timestamp);
             String displayTime = timeMatcher.matches()
                     ? timeMatcher.group(1) : timestamp;
-            appendBubble(sender + "  →  " + receiver, content,
-                    sender.equals(username), true, displayTime);
+            String historyLabel;
+            boolean mine = sender.equals(username);
+
+            if (mine) {
+                historyLabel = receiver.equalsIgnoreCase("ALL")
+                        ? "YOU  →  EVERYONE"
+                        : "YOU  →  " + receiver;
+            } else {
+                historyLabel = sender + "  →  YOU";
+            }
+
+            appendBubble(historyLabel, content, mine, true, displayTime);
         } else {
             appendBubble("Previous message", history, false, true, "");
         }
@@ -767,7 +777,7 @@ public class ChatGui extends JFrame {
         bubble.setBorder(new EmptyBorder(10, 14, 9, 14));
         bubble.setMaximumSize(new Dimension(560, Integer.MAX_VALUE));
 
-        JLabel senderLabel = new JLabel(history ? "HISTORY" : sender);
+        JLabel senderLabel = new JLabel(sender);
         senderLabel.setForeground(mine ? new Color(218, 244, 228) : MINT);
         senderLabel.setFont(new Font("SansSerif", Font.BOLD, 10));
 
