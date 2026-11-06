@@ -7,6 +7,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 
@@ -22,16 +24,16 @@ import notification.AppNotification;
  */
 public class ChatGui extends JFrame {
 
-    private static final Color BG = new Color(16, 30, 27);
-    private static final Color SIDEBAR = new Color(25, 51, 44);
-    private static final Color CHAT = new Color(20, 41, 35);
-    private static final Color SURFACE = new Color(30, 59, 50);
-    private static final Color BUBBLE_IN = new Color(41, 72, 60);
-    private static final Color GREEN = new Color(35, 107, 80);
-    private static final Color MINT = new Color(184, 229, 205);
-    private static final Color TEXT = new Color(230, 242, 234);
-    private static final Color MUTED = new Color(145, 179, 162);
-    private static final Color BORDER = new Color(52, 84, 72);
+    private static final Color BG = new Color(9, 14, 29);
+    private static final Color SIDEBAR = new Color(17, 26, 47);
+    private static final Color CHAT = new Color(13, 22, 41);
+    private static final Color SURFACE = new Color(27, 39, 65);
+    private static final Color BUBBLE_IN = new Color(35, 49, 76);
+    private static final Color GREEN = new Color(108, 92, 231);
+    private static final Color MINT = new Color(103, 232, 249);
+    private static final Color TEXT = new Color(241, 245, 255);
+    private static final Color MUTED = new Color(153, 169, 199);
+    private static final Color BORDER = new Color(45, 61, 94);
 
     private PrintWriter writer;
     private BufferedReader reader;
@@ -54,6 +56,7 @@ public class ChatGui extends JFrame {
     private String pendingMessageHeader;
     private String pendingMessageType;
     private boolean connected;
+    private final java.util.List<JButton> navigationButtons = new ArrayList<JButton>();
 
     public ChatGui() {
         showSplashScreen();
@@ -167,7 +170,7 @@ public class ChatGui extends JFrame {
 
     private JPanel buildNavigationRail() {
         JPanel rail = new JPanel();
-        rail.setBackground(new Color(11, 23, 20));
+        rail.setBackground(new Color(7, 11, 24));
         rail.setPreferredSize(new Dimension(72, 0));
         rail.setBorder(new EmptyBorder(22, 10, 18, 10));
         rail.setLayout(new BoxLayout(rail, BoxLayout.Y_AXIS));
@@ -203,14 +206,33 @@ public class ChatGui extends JFrame {
         button.setToolTipText(tooltip);
         button.setFont(new Font("SansSerif", Font.PLAIN, 20));
         button.setForeground(active ? MINT : MUTED);
-        button.setBackground(active ? SURFACE : new Color(11, 23, 20));
+        button.setBackground(active ? SURFACE : new Color(7, 11, 24));
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(11, 10, 11, 10));
         button.setMaximumSize(new Dimension(50, 50));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.addActionListener(e -> contentCards.show(contentPanel, card));
+        addButtonHover(button, active ? SURFACE : new Color(7, 11, 24),
+                active ? new Color(48, 62, 99) : new Color(25, 37, 64));
+        navigationButtons.add(button);
+        button.addActionListener(e -> {
+            contentCards.show(contentPanel, card);
+            setActiveNavigation(button);
+        });
         return button;
+    }
+
+    private void setActiveNavigation(JButton selected) {
+        for (JButton button : navigationButtons) {
+            boolean active = button == selected;
+            button.setForeground(active ? MINT : MUTED);
+            button.setBackground(active ? SURFACE : new Color(7, 11, 24));
+            button.setBorder(active
+                    ? BorderFactory.createCompoundBorder(
+                            BorderFactory.createMatteBorder(0, 3, 0, 0, MINT),
+                            BorderFactory.createEmptyBorder(11, 7, 11, 10))
+                    : BorderFactory.createEmptyBorder(11, 10, 11, 10));
+        }
     }
 
     private JPanel buildConversationSidebar() {
@@ -249,15 +271,30 @@ public class ChatGui extends JFrame {
         top.add(Box.createVerticalStrut(10));
 
         JTextField search = new JTextField();
-        search.setText("  Search people...");
+        final String searchHint = "Search people...";
+        search.setText(searchHint);
         search.setForeground(MUTED);
-        search.setBackground(new Color(20, 41, 35));
+        search.setBackground(new Color(13, 22, 41));
         search.setCaretColor(TEXT);
         search.setFont(new Font("SansSerif", Font.PLAIN, 13));
         search.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(BORDER),
                 new EmptyBorder(10, 8, 10, 8)));
         top.add(search);
+        search.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) {
+                if (search.getText().trim().equals(searchHint)) {
+                    search.setText("");
+                    search.setForeground(TEXT);
+                }
+            }
+            @Override public void focusLost(FocusEvent e) {
+                if (search.getText().trim().isEmpty()) {
+                    search.setText(searchHint);
+                    search.setForeground(MUTED);
+                }
+            }
+        });
         side.add(top, BorderLayout.NORTH);
 
         userListModel = new DefaultListModel<String>();
@@ -279,6 +316,7 @@ public class ChatGui extends JFrame {
             @Override
             public void keyReleased(KeyEvent e) {
                 String query = search.getText().trim().toLowerCase();
+                if (query.equals(searchHint.toLowerCase())) return;
                 for (int i = 0; i < userListModel.size(); i++) {
                     if (userListModel.get(i).toLowerCase().contains(query)) {
                         userList.setSelectedIndex(i);
@@ -327,7 +365,9 @@ public class ChatGui extends JFrame {
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(CHAT);
-        header.setBorder(new EmptyBorder(20, 28, 18, 28));
+        header.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER),
+                new EmptyBorder(20, 28, 18, 28)));
 
         JPanel identity = new JPanel(new BorderLayout(12, 0));
         identity.setOpaque(false);
@@ -357,12 +397,13 @@ public class ChatGui extends JFrame {
         });
         JButton filesButton = subtleButton("Files");
         filesButton.addActionListener(e -> openReceivedFile());
+        actions.add(statusPill("● CONNECTED"));
         actions.add(groupButton);
         actions.add(filesButton);
         header.add(actions, BorderLayout.EAST);
         chat.add(header, BorderLayout.NORTH);
 
-        messageList = new JPanel();
+        messageList = new MessagePanel();
         messageList.setBackground(CHAT);
         messageList.setLayout(new BoxLayout(messageList, BoxLayout.Y_AXIS));
         messageList.setBorder(new EmptyBorder(16, 28, 22, 28));
@@ -371,6 +412,7 @@ public class ChatGui extends JFrame {
         messageScroll.setBorder(null);
         messageScroll.getViewport().setBackground(CHAT);
         messageScroll.getVerticalScrollBar().setUnitIncrement(18);
+        styleChatScrollBar(messageScroll.getVerticalScrollBar());
         chat.add(messageScroll, BorderLayout.CENTER);
 
         chat.add(buildComposer(), BorderLayout.SOUTH);
@@ -381,7 +423,9 @@ public class ChatGui extends JFrame {
     private JPanel buildComposer() {
         JPanel footer = new JPanel(new BorderLayout(10, 0));
         footer.setBackground(CHAT);
-        footer.setBorder(new EmptyBorder(14, 24, 22, 24));
+        footer.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, BORDER),
+                new EmptyBorder(14, 24, 22, 24)));
 
         JPanel composer = new JPanel(new BorderLayout(10, 0));
         composer.setBackground(SURFACE);
@@ -397,6 +441,7 @@ public class ChatGui extends JFrame {
         attach.setBorder(null);
         attach.setFocusPainted(false);
         attach.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(attach, SURFACE, new Color(43, 59, 91));
         attach.addActionListener(e -> sendFile());
 
         messageInput = new JTextField();
@@ -415,6 +460,7 @@ public class ChatGui extends JFrame {
         send.setFocusPainted(false);
         send.setBorder(new EmptyBorder(11, 17, 11, 17));
         send.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(send, GREEN, new Color(133, 119, 255));
         send.addActionListener(e -> sendMessage());
 
         composer.add(attach, BorderLayout.WEST);
@@ -422,7 +468,7 @@ public class ChatGui extends JFrame {
         composer.add(send, BorderLayout.EAST);
         footer.add(composer, BorderLayout.CENTER);
 
-        JLabel hint = new JLabel("Messages are sent over your local network");
+        JLabel hint = new JLabel("PRIVATE NETWORK  •  KEYRYX CONNECTION");
         hint.setForeground(MUTED);
         hint.setFont(new Font("SansSerif", Font.PLAIN, 10));
         hint.setBorder(new EmptyBorder(8, 4, 0, 0));
@@ -473,8 +519,8 @@ public class ChatGui extends JFrame {
         panel.add(network);
         panel.add(Box.createVerticalStrut(14));
 
-        JPanel appearance = settingsCard("APPEARANCE", "Midnight Emerald",
-                "The signature KEYRYX deep-emerald interface theme");
+        JPanel appearance = settingsCard("APPEARANCE", "Aurora Night",
+                "Midnight navy surfaces with electric violet and cyan accents");
         appearance.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(appearance);
         panel.add(Box.createVerticalGlue());
@@ -485,7 +531,9 @@ public class ChatGui extends JFrame {
         JPanel card = new JPanel();
         card.setOpaque(true);
         card.setBackground(SIDEBAR);
-        card.setBorder(new EmptyBorder(18, 20, 18, 20));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER),
+                new EmptyBorder(18, 20, 18, 20)));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setMaximumSize(new Dimension(650, 105));
         JLabel small = new JLabel(eyebrow);
@@ -668,7 +716,35 @@ public class ChatGui extends JFrame {
     }
 
     private void appendHistoryMessage(String history) {
-        appendBubble("Previous message", history, false, true);
+        // Stored format: timestamp |sender ->receiver :message
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(
+                "^(.*?)\\s*\\|\\s*(.*?)\\s*->\\s*(.*?)\\s*:\\s*(.*)$")
+                .matcher(history);
+        if (matcher.matches()) {
+            String timestamp = matcher.group(1).trim();
+            String sender = matcher.group(2).trim();
+            String receiver = matcher.group(3).trim();
+            String content = matcher.group(4).trim();
+            java.util.regex.Matcher timeMatcher = java.util.regex.Pattern
+                    .compile(".*?(\\d{2}:\\d{2}):\\d{2}.*")
+                    .matcher(timestamp);
+            String displayTime = timeMatcher.matches()
+                    ? timeMatcher.group(1) : timestamp;
+            String historyLabel;
+            boolean mine = sender.equals(username);
+
+            if (mine) {
+                historyLabel = receiver.equalsIgnoreCase("ALL")
+                        ? "YOU  →  EVERYONE"
+                        : "YOU  →  " + receiver;
+            } else {
+                historyLabel = sender + "  →  YOU";
+            }
+
+            appendBubble(historyLabel, content, mine, true, displayTime);
+        } else {
+            appendBubble("Previous message", history, false, true, "");
+        }
     }
 
     private void appendSystemMessage(String text) {
@@ -686,6 +762,12 @@ public class ChatGui extends JFrame {
     }
 
     private void appendBubble(String sender, String text, boolean mine, boolean history) {
+        appendBubble(sender, text, mine, history,
+                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+    }
+
+    private void appendBubble(String sender, String text, boolean mine,
+            boolean history, String timeText) {
         JPanel row = new JPanel(new BorderLayout());
         row.setOpaque(false);
         row.setBorder(new EmptyBorder(4, 0, 8, 0));
@@ -695,7 +777,7 @@ public class ChatGui extends JFrame {
         bubble.setBorder(new EmptyBorder(10, 14, 9, 14));
         bubble.setMaximumSize(new Dimension(560, Integer.MAX_VALUE));
 
-        JLabel senderLabel = new JLabel(history ? "HISTORY" : sender);
+        JLabel senderLabel = new JLabel(sender);
         senderLabel.setForeground(mine ? new Color(218, 244, 228) : MINT);
         senderLabel.setFont(new Font("SansSerif", Font.BOLD, 10));
 
@@ -707,11 +789,29 @@ public class ChatGui extends JFrame {
         content.setForeground(TEXT);
         content.setFont(new Font("SansSerif", Font.PLAIN, 13));
         content.setFocusable(false);
-        content.setMaximumSize(new Dimension(500, Integer.MAX_VALUE));
+        content.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        FontMetrics metrics = content.getFontMetrics(content.getFont());
+        int textWidth = 0;
+        for (String line : text.split("\\n", -1)) {
+            textWidth = Math.max(textWidth, metrics.stringWidth(line));
+        }
+        int bubbleTextWidth = Math.max(130, Math.min(420, textWidth + 4));
+        content.setSize(bubbleTextWidth, Short.MAX_VALUE);
+        Dimension contentSize = content.getPreferredSize();
+        content.setPreferredSize(new Dimension(bubbleTextWidth, contentSize.height));
+        content.setMaximumSize(new Dimension(bubbleTextWidth, Integer.MAX_VALUE));
+        content.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         bubble.add(senderLabel);
         bubble.add(Box.createVerticalStrut(5));
         bubble.add(content);
+
+        JLabel time = new JLabel(timeText);
+        time.setForeground(mine ? new Color(226, 220, 255) : MUTED);
+        time.setFont(new Font("SansSerif", Font.PLAIN, 9));
+        time.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        bubble.add(Box.createVerticalStrut(5));
+        bubble.add(time);
 
         if (mine) row.add(bubble, BorderLayout.EAST);
         else row.add(bubble, BorderLayout.WEST);
@@ -735,6 +835,78 @@ public class ChatGui extends JFrame {
         }
     }
 
+    private void styleChatScrollBar(JScrollBar scrollBar) {
+        scrollBar.setPreferredSize(new Dimension(9, 0));
+        scrollBar.setBackground(CHAT);
+        scrollBar.setForeground(SURFACE);
+        scrollBar.setBorder(null);
+        scrollBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+            @Override protected void configureScrollBarColors() {
+                thumbColor = new Color(65, 79, 117);
+                trackColor = CHAT;
+            }
+            @Override protected JButton createDecreaseButton(int orientation) {
+                return zeroScrollButton();
+            }
+            @Override protected JButton createIncreaseButton(int orientation) {
+                return zeroScrollButton();
+            }
+            @Override protected void paintThumb(Graphics g, JComponent c,
+                    Rectangle bounds) {
+                if (bounds.isEmpty() || !scrollbar.isEnabled()) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(thumbColor);
+                g2.fillRoundRect(bounds.x + 2, bounds.y + 2,
+                        Math.max(1, bounds.width - 4), Math.max(1, bounds.height - 4),
+                        8, 8);
+                g2.dispose();
+            }
+            @Override protected void paintTrack(Graphics g, JComponent c,
+                    Rectangle bounds) {
+                g.setColor(trackColor);
+                g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            }
+            private JButton zeroScrollButton() {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(0, 0));
+                button.setMinimumSize(new Dimension(0, 0));
+                button.setMaximumSize(new Dimension(0, 0));
+                button.setVisible(false);
+                return button;
+            }
+        });
+    }
+
+    private void addButtonHover(JButton button, Color normal, Color hover) {
+        button.setOpaque(true);
+        button.setBorderPainted(true);
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent event) {
+                button.setBackground(hover);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent event) {
+                button.setBackground(normal);
+            }
+        });
+    }
+
+    private JLabel statusPill(String value) {
+        JLabel pill = new JLabel(value);
+        pill.setFont(new Font("SansSerif", Font.BOLD, 9));
+        pill.setForeground(MINT);
+        pill.setOpaque(true);
+        pill.setBackground(new Color(20, 57, 62));
+        pill.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(37, 93, 99)),
+                new EmptyBorder(7, 10, 7, 10)));
+        return pill;
+    }
+
     private JButton subtleButton(String label) {
         JButton button = new JButton(label);
         button.setForeground(MINT);
@@ -745,15 +917,15 @@ public class ChatGui extends JFrame {
                 BorderFactory.createLineBorder(BORDER),
                 new EmptyBorder(8, 12, 8, 12)));
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addButtonHover(button, SURFACE, new Color(43, 59, 91));
         return button;
     }
 
     private JLabel avatarLabel(String text, int size, Color color) {
-        JLabel label = new JLabel(text, SwingConstants.CENTER);
+        JLabel label = new CircularAvatarLabel(text, size, color);
         label.setPreferredSize(new Dimension(size, size));
         label.setMinimumSize(new Dimension(size, size));
-        label.setOpaque(true);
-        label.setBackground(color);
+        label.setOpaque(false);
         label.setForeground(TEXT);
         label.setFont(new Font("SansSerif", Font.BOLD, size > 40 ? 12 : 10));
         return label;
@@ -765,6 +937,52 @@ public class ChatGui extends JFrame {
         if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();
         return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1))
                 .toUpperCase();
+    }
+
+    private static class CircularAvatarLabel extends JLabel {
+        private final Color avatarColor;
+        CircularAvatarLabel(String text, int size, Color color) {
+            super(text, SwingConstants.CENTER);
+            avatarColor = color;
+            setPreferredSize(new Dimension(size, size));
+            setMinimumSize(new Dimension(size, size));
+            setForeground(TEXT);
+            setFont(new Font("SansSerif", Font.BOLD, size > 40 ? 12 : 10));
+            setOpaque(false);
+        }
+        @Override protected void paintComponent(Graphics graphics) {
+            Graphics2D g = (Graphics2D) graphics.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setPaint(new GradientPaint(0, 0, avatarColor.brighter(), getWidth(), getHeight(), avatarColor.darker()));
+            g.fillOval(1, 1, getWidth() - 3, getHeight() - 3);
+            g.setColor(new Color(255, 255, 255, 65));
+            g.drawOval(1, 1, getWidth() - 3, getHeight() - 3);
+            g.dispose();
+            super.paintComponent(graphics);
+        }
+    }
+
+    private static class MessagePanel extends JPanel implements Scrollable {
+        MessagePanel() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+        @Override public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+        @Override public int getScrollableUnitIncrement(Rectangle visibleRect,
+                int orientation, int direction) {
+            return 18;
+        }
+        @Override public int getScrollableBlockIncrement(Rectangle visibleRect,
+                int orientation, int direction) {
+            return Math.max(visibleRect.height - 18, 18);
+        }
+        @Override public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+        @Override public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
     }
 
     private class UserCellRenderer extends JPanel implements ListCellRenderer<String> {
@@ -821,8 +1039,10 @@ public class ChatGui extends JFrame {
             Graphics2D g = (Graphics2D) graphics.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(fill);
+            g.setPaint(new GradientPaint(0, 0, fill.brighter(), 0, getHeight(), fill));
             g.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g.setColor(new Color(255, 255, 255, 24));
+            g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
             g.dispose();
             super.paintComponent(graphics);
         }
