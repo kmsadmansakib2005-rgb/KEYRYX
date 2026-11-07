@@ -1161,7 +1161,7 @@ public class ChatGui extends JFrame {
         panel.setBackground(BG);
         panel.setBorder(BorderFactory.createLineBorder(BORDER));
 
-        java.net.URL imageUrl = ChatGui.class.getResource("img_1.png");
+        java.net.URL imageUrl = ChatGui.class.getResource("iamge.jpeg");
         if (imageUrl != null) {
             ImageIcon original = new ImageIcon(imageUrl);
             Image scaled = original.getImage().getScaledInstance(520, 284, Image.SCALE_SMOOTH);
