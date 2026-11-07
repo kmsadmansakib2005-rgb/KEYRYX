@@ -11,6 +11,7 @@ public class FileTransferHandler implements Runnable {
     private final Socket socket;
     private final FileTransferServer transferServer;
     private String userName;
+    private String sessionToken;
     private DataOutputStream output;
 
     public FileTransferHandler(Socket socket, FileTransferServer transferServer) {
@@ -36,6 +37,7 @@ public class FileTransferHandler implements Runnable {
                 }
 
                 userName = session.getUsername();
+                sessionToken = token;
                 transferServer.registerUser(userName, this);
                 output.writeUTF("OK");
                 output.flush();
@@ -69,7 +71,8 @@ public class FileTransferHandler implements Runnable {
                 FileTransferHandler recipientHandler =
                         transferServer.findUser(recipient);
 
-                if (recipientHandler == null || recipientHandler.output == null) {
+                if (recipientHandler == null || recipientHandler.output == null
+                        || !recipientHandler.isSessionActive()) {
                     output.writeUTF("RECIPIENT_OFFLINE");
                     output.flush();
                     return;
@@ -118,6 +121,11 @@ public class FileTransferHandler implements Runnable {
             } catch (IOException ignored) {
             }
         }
+    }
+
+    private boolean isSessionActive() {
+        Session session = AuthenticationService.authenticate(sessionToken);
+        return validSession(session, userName);
     }
 
     private boolean validSession(Session session, String requestedUsername) {
