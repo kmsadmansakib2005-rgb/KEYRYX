@@ -43,7 +43,7 @@ public class AuthenticationService {
 
     // Approve a user using an administrator session
     public static boolean approveUser(
-            String adminToken, String username) {
+            String adminToken, String username) throws java.io.IOException {
 
         Session session = authenticate(adminToken);
 
