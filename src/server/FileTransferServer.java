@@ -16,9 +16,9 @@ public class FileTransferServer implements Runnable {
         connectedUsers.put(username, handler);
     }
 
-    public void removeUser(String username) {
-        if (username != null) {
-            connectedUsers.remove(username);
+    public void removeUser(String username, FileTransferHandler handler) {
+        if (username != null && handler != null) {
+            connectedUsers.remove(username, handler);
         }
     }
 
