@@ -114,7 +114,7 @@ public class FileTransferHandler implements Runnable {
             System.out.println("File transfer failed: " + e.getMessage());
         } finally {
             if (userName != null) {
-                transferServer.removeUser(userName);
+                transferServer.removeUser(userName, this);
             }
             try {
                 socket.close();
