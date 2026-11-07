@@ -63,6 +63,9 @@ public class ChatGui extends JFrame {
 
     public ChatGui() {
         showSplashScreen();
+    }
+
+    private void initializeAfterSplash() {
         if (!loginAndConnect()) {
             return;
         }
@@ -1158,11 +1161,19 @@ public class ChatGui extends JFrame {
         panel.setBackground(BG);
         panel.setBorder(BorderFactory.createLineBorder(BORDER));
 
-        ImageIcon original = new ImageIcon(ChatGui.class.getResource("img_1.png"));
-        Image scaled = original.getImage().getScaledInstance(520, 284, Image.SCALE_SMOOTH);
-        JLabel image = new JLabel(new ImageIcon(scaled));
-        image.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(image, BorderLayout.CENTER);
+        java.net.URL imageUrl = ChatGui.class.getResource("img_1.png");
+        if (imageUrl != null) {
+            ImageIcon original = new ImageIcon(imageUrl);
+            Image scaled = original.getImage().getScaledInstance(520, 284, Image.SCALE_SMOOTH);
+            JLabel image = new JLabel(new ImageIcon(scaled));
+            image.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(image, BorderLayout.CENTER);
+        } else {
+            JLabel fallback = new JLabel("KEYRYX", SwingConstants.CENTER);
+            fallback.setForeground(TEXT);
+            fallback.setFont(new Font("SansSerif", Font.BOLD, 34));
+            panel.add(fallback, BorderLayout.CENTER);
+        }
 
         JLabel loading = new JLabel("  EVERY NODE HAS A VOICE     •     STARTING KEYRYX  ",
                 SwingConstants.CENTER);
@@ -1177,12 +1188,15 @@ public class ChatGui extends JFrame {
         splash.setSize(520, 330);
         splash.setLocationRelativeTo(null);
         splash.setVisible(true);
-        try {
-            Thread.sleep(1200);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-        splash.dispose();
+
+        // Keep the Event Dispatch Thread free to paint the splash screen.
+        Timer splashTimer = new Timer(1500, event -> {
+            ((Timer) event.getSource()).stop();
+            splash.dispose();
+            initializeAfterSplash();
+        });
+        splashTimer.setRepeats(false);
+        splashTimer.start();
     }
 
     public static void main(String[] args) {
