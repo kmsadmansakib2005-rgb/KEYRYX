@@ -41,7 +41,12 @@ public class FileTransferClient {
                         throw new IOException("Invalid file size.");
                     }
 
-                    Path directory = Paths.get("received_files");
+                    Path directory = Paths.get(
+                            System.getProperty("user.home"),
+                            "Documents",
+                            "KEYRYX",
+                            "received_files"
+                    );
                     Files.createDirectories(directory);
                     Path filePath = directory.resolve(
                             Paths.get(fileName).getFileName().toString());

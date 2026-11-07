@@ -1122,8 +1122,127 @@ public class ChatGui extends JFrame {
         panel.add(appearance);
         panel.add(Box.createVerticalGlue());
 
+        JPanel about= settingsCard(
+                "ABOUT KEYRYX","Every Node has a voice.",
+                "Learn about the KEYRYX and its developer");
+        about.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(about);
+        panel.add(Box.createVerticalStrut(10));
+
+        JButton aboutButton= subtleButton("View about KEYRYX");
+        aboutButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        aboutButton.addActionListener(e -> showAboutDialog());
+        panel.add(aboutButton);
+
+        panel.add(Box.createVerticalGlue());
+
         return panel;
     }
+
+
+    private void showAboutDialog() {
+
+        JDialog dialog = new JDialog(this, "About KEYRYX", true);
+        dialog.setSize(460, 570);
+        dialog.setResizable(false);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel content = new JPanel();
+        content.setBackground(CHAT);
+        content.setBorder(new EmptyBorder(25, 30, 25, 30));
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+        JLabel appName = new JLabel("KEYRYX");
+        appName.setFont(new Font("SansSerif", Font.BOLD, 30));
+        appName.setForeground(TEXT);
+        appName.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel tagline = new JLabel("Every node has a voice.");
+        tagline.setFont(new Font("SansSerif", Font.ITALIC, 13));
+        tagline.setForeground(MINT);
+        tagline.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel version = new JLabel("Version 1.0.1");
+        version.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        version.setForeground(MUTED);
+        version.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        content.add(appName);
+        content.add(Box.createVerticalStrut(5));
+        content.add(tagline);
+        content.add(Box.createVerticalStrut(5));
+        content.add(version);
+        content.add(Box.createVerticalStrut(25));
+
+        // Developer photograph
+        java.net.URL photoUrl = getClass().getResource("/gui/developer.jpg");
+
+        if (photoUrl != null) {
+            ImageIcon original = new ImageIcon(photoUrl);
+
+            Image scaledImage = original.getImage().getScaledInstance(
+                    145, 145, Image.SCALE_SMOOTH
+            );
+
+            JLabel photo = new JLabel(new ImageIcon(scaledImage));
+            photo.setAlignmentX(Component.CENTER_ALIGNMENT);
+            content.add(photo);
+        } else {
+            JLabel missingPhoto = new JLabel("Developer photo unavailable");
+            missingPhoto.setForeground(MUTED);
+            missingPhoto.setAlignmentX(Component.CENTER_ALIGNMENT);
+            content.add(missingPhoto);
+        }
+
+        content.add(Box.createVerticalStrut(18));
+
+        JLabel developerName = new JLabel("K. M. Sadman Sakib");
+        developerName.setFont(new Font("SansSerif", Font.BOLD, 18));
+        developerName.setForeground(TEXT);
+        developerName.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel developerRole = new JLabel("Developer & Founder");
+        developerRole.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        developerRole.setForeground(MINT);
+        developerRole.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        content.add(developerName);
+        content.add(Box.createVerticalStrut(5));
+        content.add(developerRole);
+        content.add(Box.createVerticalStrut(22));
+
+        JLabel description = new JLabel(
+                "<html><div style='text-align:center;'>"
+                        + "A LAN-based messaging application built with Java Swing."
+                        + "<br>Designed to make local communication simple and connected."
+                        + "</div></html>"
+        );
+
+        description.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        description.setForeground(MUTED);
+        description.setAlignmentX(Component.CENTER_ALIGNMENT);
+        description.setHorizontalAlignment(SwingConstants.CENTER);
+
+        content.add(description);
+        content.add(Box.createVerticalStrut(22));
+
+        JLabel copyright = new JLabel("© 2026 KEYRYX");
+        copyright.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        copyright.setForeground(MUTED);
+        copyright.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        content.add(copyright);
+        content.add(Box.createVerticalStrut(20));
+
+        JButton closeButton = subtleButton("Close");
+        closeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        closeButton.addActionListener(e -> dialog.dispose());
+        content.add(closeButton);
+
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
+    }
+
 
     private JPanel settingsCard(
             String eyebrow,
@@ -1307,7 +1426,12 @@ public class ChatGui extends JFrame {
 
     private void openReceivedFile() {
 
-        File folder = new File("received_files");
+        File folder = new File(
+                System.getProperty("user.home"),
+                "Documents" + File.separator
+                        + "KEYRYX" + File.separator
+                        + "received_files"
+        );
 
         if (!folder.exists()) {
 
