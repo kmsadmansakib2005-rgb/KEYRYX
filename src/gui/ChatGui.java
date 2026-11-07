@@ -38,6 +38,8 @@ public class ChatGui extends JFrame {
     private PrintWriter writer;
     private BufferedReader reader;
     private String username;
+    private String sessionToken;
+    private boolean administrator;
     private String serverIP;
     private String welcomeMessage;
     private TrayIcon trayIcon;
@@ -71,36 +73,87 @@ public class ChatGui extends JFrame {
     }
 
     private boolean loginAndConnect() {
-        username = JOptionPane.showInputDialog(null, "Choose a username:",
-                "KEYRYX • Welcome", JOptionPane.QUESTION_MESSAGE);
-        if (username == null || username.trim().isEmpty()) {
-            return false;
-        }
-        username = username.trim();
-
         serverIP = JOptionPane.showInputDialog(null, "Enter the server IP address:",
                 "Connect to KEYRYX", JOptionPane.QUESTION_MESSAGE);
-        if (serverIP == null || serverIP.trim().isEmpty()) {
-            return false;
-        }
+        if (serverIP == null || serverIP.trim().isEmpty()) return false;
         serverIP = serverIP.trim();
+
+        Object[] actions = {"Sign in", "Create account", "Administrator"};
+        int action = JOptionPane.showOptionDialog(null,
+                "Choose how you want to connect to KEYRYX.",
+                "KEYRYX Authentication",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                null, actions, actions[0]);
+        if (action < 0) return false;
+
+        String enteredUsername = JOptionPane.showInputDialog(null, "Username:",
+                "KEYRYX Authentication", JOptionPane.QUESTION_MESSAGE);
+        if (enteredUsername == null || enteredUsername.trim().isEmpty()) return false;
+        enteredUsername = enteredUsername.trim();
+
+        JPasswordField passwordField = new JPasswordField();
+        int passwordResult = JOptionPane.showConfirmDialog(null, passwordField,
+                "Enter your password", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (passwordResult != JOptionPane.OK_OPTION) return false;
+        String password = new String(passwordField.getPassword());
+
+        String command = action == 1 ? "REGISTER" :
+                (action == 2 ? "ADMIN_LOGIN" : "LOGIN");
 
         try {
             socket = new Socket(serverIP, 1000);
             writer = new PrintWriter(socket.getOutputStream(), true);
-            writer.println(username);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            welcomeMessage = reader.readLine();
 
-            if ("Login Failed".equals(welcomeMessage)) {
+            writer.println(command + "|" + enteredUsername + "|" + password);
+            String response = reader.readLine();
+
+            if ("REGISTERED_PENDING".equals(response)) {
                 JOptionPane.showMessageDialog(null,
-                        "That username is already in use or invalid.",
+                        "Your account has been created. An administrator must approve it before you can sign in.",
+                        "Registration submitted", JOptionPane.INFORMATION_MESSAGE);
+                socket.close();
+                return false;
+            }
+
+            if ("REGISTER_FAILED".equals(response)) {
+                JOptionPane.showMessageDialog(null,
+                        "Registration failed. Check the username and password requirements, or try another username.",
+                        "Registration failed", JOptionPane.ERROR_MESSAGE);
+                socket.close();
+                return false;
+            }
+
+            if ("ALREADY_ONLINE".equals(response)) {
+                JOptionPane.showMessageDialog(null,
+                        "This account is already connected to KEYRYX.",
+                        "Account already online", JOptionPane.WARNING_MESSAGE);
+                socket.close();
+                return false;
+            }
+
+            if (response == null || !response.startsWith("AUTH_OK|")) {
+                JOptionPane.showMessageDialog(null,
+                        "Authentication failed. Check your credentials and account approval status.",
                         "Login failed", JOptionPane.ERROR_MESSAGE);
                 socket.close();
                 return false;
             }
+
+            String[] auth = response.split("\\|", 4);
+            if (auth.length != 4) {
+                socket.close();
+                return false;
+            }
+
+            sessionToken = auth[1];
+            username = auth[2];
+            administrator = "ADMIN".equals(auth[3]);
+            welcomeMessage = reader.readLine();
             connected = true;
             return true;
+
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null,
                     "Could not connect to " + serverIP + " on port 1000.\n"
@@ -135,6 +188,7 @@ public class ChatGui extends JFrame {
             public void windowClosing(WindowEvent event) {
                 connected = false;
                 try {
+                    if (writer != null) writer.println("LOGOUT");
                     if (socket != null) socket.close();
                 } catch (IOException ex) {
                     System.out.println("Error closing connection: " + ex.getMessage());
@@ -519,6 +573,20 @@ public class ChatGui extends JFrame {
         panel.add(network);
         panel.add(Box.createVerticalStrut(14));
 
+        if (administrator) {
+            JButton approveUser = subtleButton("Approve pending user");
+            approveUser.setAlignmentX(Component.LEFT_ALIGNMENT);
+            approveUser.addActionListener(e -> {
+                String target = JOptionPane.showInputDialog(this,
+                        "Enter the username to approve:");
+                if (target != null && !target.trim().isEmpty() && writer != null) {
+                    writer.println("APPROVE|" + target.trim());
+                }
+            });
+            panel.add(approveUser);
+            panel.add(Box.createVerticalStrut(14));
+        }
+
         JPanel appearance = settingsCard("APPEARANCE", "Aurora Night",
                 "Midnight navy surfaces with electric violet and cyan accents");
         appearance.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -597,7 +665,7 @@ public class ChatGui extends JFrame {
         File selectedFile = chooser.getSelectedFile();
 
         Thread sending = new Thread(() -> {
-            boolean success = new FileSender().sendFile(serverIP, recipient, selectedFile);
+            boolean success = new FileSender().sendFile(serverIP, username, sessionToken, recipient, selectedFile);
             SwingUtilities.invokeLater(() -> {
                 appendSystemMessage(success
                         ? "File sent: " + selectedFile.getName() + " → " + recipient
@@ -629,7 +697,7 @@ public class ChatGui extends JFrame {
     private void startFileReceiver() {
         Thread fileReceiver = new Thread(() -> {
             FileTransferClient client = new FileTransferClient();
-            client.connectAndListen(serverIP, username, message ->
+            client.connectAndListen(serverIP, username, sessionToken, message ->
                     SwingUtilities.invokeLater(() -> appendSystemMessage("[FILE] " + message)));
         }, "KEYRYX-file-receiver");
         fileReceiver.setDaemon(true);
@@ -658,6 +726,23 @@ public class ChatGui extends JFrame {
     }
 
     private void processIncomingLine(String incoming) {
+        if (incoming.equals("AUTH_EXPIRED")) {
+            connected = false;
+            appendSystemMessage("Your session expired. Please sign in again.");
+            return;
+        }
+
+        if (incoming.startsWith("APPROVE_RESULT|")) {
+            String[] result = incoming.split("\\|", 3);
+            if (result.length >= 2) {
+                String detail = result[1].equals("SUCCESS")
+                        ? "User approved: " + (result.length == 3 ? result[2] : "")
+                        : "Approval failed or permission denied.";
+                appendSystemMessage(detail);
+            }
+            return;
+        }
+
         if (incoming.startsWith("USERS|")) {
             String selected = userList.getSelectedValue();
             userListModel.clear();
