@@ -1,42 +1,49 @@
 package client;
 
-import java.net.*;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class Client {
-    public static void main(String[] args)
-    {
-        try
-        {
-            Scanner sc= new Scanner(System.in);
-            System.out.println("Enter your username: ");
-            String username= sc.nextLine();
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.print("Username: ");
+            String username = scanner.nextLine().trim();
 
+            System.out.print("Password: ");
+            String password = scanner.nextLine();
 
-            //Socket socket= new Socket("localhost", 1000);
-            ClientConnection clientConnection= new ClientConnection();
-            Socket socket= clientConnection.getSocket();
+            ClientConnection connection = new ClientConnection();
+            connection.sendMessage("LOGIN|" + username + "|" + password);
 
-            ClientReceiver receiver= new ClientReceiver(socket);
-            Thread receiverThread= new Thread(receiver);
+            String response = connection.readLine();
+            if (response == null || !response.startsWith("AUTH_OK|")) {
+                System.out.println("Login failed. Check credentials and administrator approval.");
+                connection.close();
+                return;
+            }
+
+            String welcome = connection.readLine();
+            System.out.println(welcome);
+
+            ClientReceiver receiver = new ClientReceiver(connection.getReader());
+            Thread receiverThread = new Thread(receiver, "KEYRYX-console-receiver");
+            receiverThread.setDaemon(true);
             receiverThread.start();
 
-            clientConnection.sendMessage(username);
+            System.out.println("Enter messages as recipient|message. Use ALL|message for group chat.");
+            System.out.println("Type /logout to disconnect.");
 
-         //   PrintWriter writer= new PrintWriter(socket.getOutputStream(),true);
-
-            System.out.println("Enter message: ");
-
-            while(true)
-            {
-                String message= sc.nextLine();
-
-                clientConnection.sendMessage(message);
+            while (true) {
+                String message = scanner.nextLine();
+                if ("/logout".equalsIgnoreCase(message.trim())) {
+                    connection.sendMessage("LOGOUT");
+                    break;
+                }
+                connection.sendMessage(message);
             }
-        }
-        catch (IOException e)
-        {
+
+            connection.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
