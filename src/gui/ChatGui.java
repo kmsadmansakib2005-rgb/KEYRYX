@@ -51,6 +51,7 @@ public class ChatGui extends JFrame {
     private JScrollPane messageScroll;
     private JTextField messageInput;
     private JLabel chatTitle;
+    private JLabel chatAvatar;
     private JLabel chatSubtitle;
     private JLabel connectionStatus;
     private CardLayout contentCards;
@@ -425,7 +426,7 @@ public class ChatGui extends JFrame {
 
         JPanel identity = new JPanel(new BorderLayout(12, 0));
         identity.setOpaque(false);
-        JLabel avatar = avatarLabel("ALL", 44, GREEN);
+        chatAvatar = avatarLabel("ALL", 44, GREEN);
         JPanel labels = new JPanel();
         labels.setOpaque(false);
         labels.setLayout(new BoxLayout(labels, BoxLayout.Y_AXIS));
@@ -438,7 +439,7 @@ public class ChatGui extends JFrame {
         labels.add(chatTitle);
         labels.add(Box.createVerticalStrut(5));
         labels.add(chatSubtitle);
-        identity.add(avatar, BorderLayout.WEST);
+        identity.add(chatAvatar, BorderLayout.WEST);
         identity.add(labels, BorderLayout.CENTER);
         header.add(identity, BorderLayout.WEST);
 
@@ -633,9 +634,11 @@ public class ChatGui extends JFrame {
         if (selected == null || "No users online".equals(selected)) {
             chatTitle.setText("Group conversation");
             chatSubtitle.setText("A shared space for everyone on this network");
+            chatAvatar.setText("ALL");
         } else {
             chatTitle.setText(selected);
             chatSubtitle.setText("Private conversation  •  ● Online");
+            chatAvatar.setText(initials(selected));
         }
     }
 
