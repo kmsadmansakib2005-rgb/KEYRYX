@@ -18,7 +18,7 @@ public class AuthManagerTest {
         }
 
         // 2. Approve account
-        boolean approved = AuthManager.approveUserInternet(username);
+        boolean approved = AuthManager.approveUserInternal(username);
         System.out.println("Approval: " + approved);
 
         // 3. Login
