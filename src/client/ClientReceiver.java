@@ -1,33 +1,27 @@
 package client;
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
 
 public class ClientReceiver implements Runnable {
 
-    private Socket socket;
+    private final BufferedReader reader;
 
-    public ClientReceiver(Socket socket)
-    {
-        this.socket= socket;
+    public ClientReceiver(BufferedReader reader) {
+        this.reader = reader;
     }
 
-    public void run()
-    {
-        try
-        {
-            BufferedReader reader= new BufferedReader(
-                    new InputStreamReader(socket.getInputStream()));
-
-            while(true)
-            {
-                String message= reader.readLine();
-                System.out.println("Server: "+message);
+    @Override
+    public void run() {
+        try {
+            String message;
+            while ((message = reader.readLine()) != null) {
+                System.out.println("Server: " + message);
+                if ("AUTH_EXPIRED".equals(message)) {
+                    break;
+                }
             }
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             System.out.println("Disconnected from Server!");
         }
     }

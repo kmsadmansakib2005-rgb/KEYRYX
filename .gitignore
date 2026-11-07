@@ -30,3 +30,7 @@ bin/
 .DS_Store
 .idea/
 *.iml
+
+#Security database file
+users.db
+admin.db
