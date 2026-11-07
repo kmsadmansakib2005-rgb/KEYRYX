@@ -128,7 +128,10 @@ public class ClientHandler implements Runnable {
             }
             if (user != null) {
                 user.setOnline(false);
-                Server.removeClient(this);
+            }
+            // Remove failed-login handlers too; Server registers the socket before authentication.
+            Server.removeClient(this);
+            if (user != null) {
                 Server.broadcastUserList();
                 System.out.println(user.getUserName() + " disconnected!");
             }
