@@ -92,8 +92,24 @@ public class ChatGui extends JFrame {
         if (enteredUsername == null || enteredUsername.trim().isEmpty()) return false;
         enteredUsername = enteredUsername.trim();
 
-        JPasswordField passwordField = new JPasswordField();
-        int passwordResult = JOptionPane.showConfirmDialog(null, passwordField,
+        JPasswordField passwordField = new JPasswordField(22);
+        char defaultEchoChar = passwordField.getEchoChar();
+
+        JCheckBox showPassword = new JCheckBox("Show password");
+        showPassword.setOpaque(false);
+        showPassword.setForeground(MUTED);
+        showPassword.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        showPassword.setFocusPainted(false);
+        showPassword.addActionListener(e ->
+                passwordField.setEchoChar(showPassword.isSelected()
+                        ? (char) 0 : defaultEchoChar));
+
+        JPanel passwordPanel = new JPanel(new BorderLayout(0, 8));
+        passwordPanel.setOpaque(false);
+        passwordPanel.add(passwordField, BorderLayout.CENTER);
+        passwordPanel.add(showPassword, BorderLayout.SOUTH);
+
+        int passwordResult = JOptionPane.showConfirmDialog(null, passwordPanel,
                 "Enter your password", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
         if (passwordResult != JOptionPane.OK_OPTION) return false;
