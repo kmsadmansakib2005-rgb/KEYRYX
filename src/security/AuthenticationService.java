@@ -11,8 +11,13 @@ public class AuthenticationService {
             return null;
         }
 
+        String canonicalUsername = AuthManager.canonicalUsername(username);
+        if (canonicalUsername == null) {
+            return null;
+        }
+
         return SessionManager.createSession(
-                username, Session.Role.USER
+                canonicalUsername, Session.Role.USER
         );
     }
 
