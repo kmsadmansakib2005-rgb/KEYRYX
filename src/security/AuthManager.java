@@ -113,7 +113,8 @@ public class AuthManager {
                 password, salt, storedHash
         );
     }
-    public static synchronized boolean approveUserInternet(String username)
+    // Package-private: approval must be requested through an authenticated admin session.
+    static synchronized boolean approveUserInternal(String username)
             throws IOException {
 
         if (username == null) {
@@ -130,19 +131,16 @@ public class AuthManager {
         boolean approved = false;
 
         for (int i = 0; i < lines.size(); i++) {
-
             String[] data = lines.get(i).split("\\|", -1);
 
             if (data.length == 4 &&
                     data[0].equalsIgnoreCase(username)) {
-
                 if (!data[3].equals("PENDING")) {
                     return false;
                 }
 
                 data[3] = "APPROVED";
                 lines.set(i, String.join("|", data));
-
                 approved = true;
                 break;
             }
@@ -153,9 +151,5 @@ public class AuthManager {
         }
 
         return approved;
-    }
-
-    public static boolean approveUserInternal(String username) {
-        return false;
     }
 }
