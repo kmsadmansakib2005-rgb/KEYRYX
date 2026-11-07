@@ -91,6 +91,6 @@ public class AdminAuthManager {
             return false;
         }
 
-        return AuthManager.approveUserInternet(usernameToApprove);
+        return AuthManager.approveUserInternal(usernameToApprove);
     }
 }
