@@ -38,7 +38,7 @@ public class PasswordHasher {
     public static boolean verifyPassword(String password,
     byte[] salt,byte[] storedHash) throws Exception
     {
-        byte[] newHash= hashPassword(password, salt);
+        byte[] newHash= hashPassword(password,salt);
         return MessageDigest.isEqual(newHash, storedHash);
     }
 

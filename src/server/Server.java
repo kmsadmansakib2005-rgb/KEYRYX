@@ -42,7 +42,7 @@ public class Server {
         }
     }
 
-    // Create the first administrator on the server machine, once only.
+    // administrator's block
     private static void ensureAdminAccount() throws Exception {
         if (Files.exists(Path.of("admin.db"))) {
             return;

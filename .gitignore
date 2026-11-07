@@ -34,3 +34,6 @@ bin/
 #Security database file
 users.db
 admin.db
+
+# Local database backups
+admin_backup.db
