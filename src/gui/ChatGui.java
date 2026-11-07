@@ -1164,7 +1164,9 @@ public class ChatGui extends JFrame {
         java.net.URL imageUrl = ChatGui.class.getResource("iamge.jpeg");
         if (imageUrl != null) {
             ImageIcon original = new ImageIcon(imageUrl);
-            Image scaled = original.getImage().getScaledInstance(520, 284, Image.SCALE_SMOOTH);
+            Image scaled = original.getImage().getScaledInstance(
+                    520, 284, Image.SCALE_SMOOTH
+            );
             JLabel image = new JLabel(new ImageIcon(scaled));
             image.setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(image, BorderLayout.CENTER);
@@ -1174,7 +1176,6 @@ public class ChatGui extends JFrame {
             fallback.setFont(new Font("SansSerif", Font.BOLD, 34));
             panel.add(fallback, BorderLayout.CENTER);
         }
-
         JLabel loading = new JLabel("  EVERY NODE HAS A VOICE     •     STARTING KEYRYX  ",
                 SwingConstants.CENTER);
         loading.setForeground(MINT);
