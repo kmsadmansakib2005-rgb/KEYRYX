@@ -113,6 +113,13 @@ public class AuthManager {
                 password, salt, storedHash
         );
     }
+    // Return the stored spelling so online identity checks are consistent.
+    static synchronized String canonicalUsername(String username)
+            throws IOException {
+        String[] user = findUser(username);
+        return user == null ? null : user[0];
+    }
+
     // Package-private: approval must be requested through an authenticated admin session.
     static synchronized boolean approveUserInternal(String username)
             throws IOException {
