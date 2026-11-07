@@ -19,8 +19,8 @@ import notification.AppNotification;
 
 /**
  * KEYRYX desktop client.
- * The visual layer is redesigned while the existing server and file-transfer
- * wire protocols remain unchanged.
+ * The client authenticates with the server before chat and file-transfer
+ * operations; the Aurora Night visual layer remains separate from networking.
  */
 public class ChatGui extends JFrame {
 
