@@ -119,7 +119,7 @@ KEYRYX/
 ## Developer
 
 **K. M. Sadman Sakib**
-**Admin Alamgir Priok**
+**& Admin Alamgir Priok**
 
 
 Built with Java Swing.
